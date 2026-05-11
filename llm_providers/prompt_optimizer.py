@@ -34,11 +34,12 @@ def _get_client(key: str) -> AsyncOpenAI:
     """Return a persistent AsyncOpenAI client for the optimizer."""
     global _client
     if _client is None:
+        import httpx
         _client = AsyncOpenAI(
             base_url=NVIDIA_BASE_URL,
             api_key=key,
-            timeout=30.0,
-            max_retries=0,
+            timeout=httpx.Timeout(90.0, connect=10.0),
+            max_retries=1,
         )
     return _client
 
