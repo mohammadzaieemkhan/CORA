@@ -1,7 +1,9 @@
 import json
 import pandas as pd
-from cognitive import analyze_prompt
+from cognitive_module import create_scorer
 from complexity_score import cora_complexity_score
+
+scorer = create_scorer("rule")
 
 with open("routerbench_samples.json") as f:
     samples = json.load(f)
@@ -10,7 +12,7 @@ scored = []
 for item in samples:
     prompt = item.get("prompt") or item.get("instruction") or item.get("question", "")
     if not prompt: continue
-    profile = analyze_prompt(prompt)
+    profile = scorer.score(prompt)
     raw_score = cora_complexity_score(profile, prompt)
     word_count = len(prompt.split())
     boosted = raw_score

@@ -2,7 +2,7 @@ import math
 import re
 from typing import Tuple, Dict
 
-from cognitive import CognitiveProfile, TaskType
+from cognitive_module import CognitiveProfile, TaskType
 
 # ── Dimension weights ─────────────────────────────────────────────────────────
 # Increased reasoning weight and reduced creativity dominance so that
@@ -31,7 +31,7 @@ ALPHA_I = {
 TAU = {
     TaskType.CODE:           1.30,
     TaskType.DEBUGGING:      1.30,
-    TaskType.MATHEMATICAL:   1.25,
+    TaskType.MATHEMATICAL:   1.40,  # was 1.25 — GSM8K proves math needs higher tier
     TaskType.ANALYTICAL:     1.15,   # was 1.10
     TaskType.MULTI_STEP:     1.05,   # was 1.00
     TaskType.FACTUAL:        1.00,
@@ -91,37 +91,54 @@ def cora_complexity_score(profile: CognitiveProfile, prompt: str) -> float:
     
     return tau_val * sum_components
 
+def calibrate_confidence(raw_confidence: float, tier: str) -> float:
+    """
+    Apply temperature scaling per tier to reduce RS calibration error.
+    Temperatures derived from GSM8K calibration run.
+    """
+    # Ensure raw_confidence is in (0, 1) range for logit calculation
+    eps = 1e-9
+    p = max(eps, min(1.0 - eps, raw_confidence))
+    
+    # Higher temperature = lower confidence = better calibration for overconfident models
+    TEMPERATURE = {
+        "Tier 0": 2.8,   # most overconfident on math
+        "Tier 1": 2.2,
+        "Tier 2": 1.6,
+        "Tier 3": 1.2,
+        "Tier 4": 1.0,   # frontier models are best calibrated
+    }
+    T = TEMPERATURE.get(tier, 1.5)
+    
+    # Softmax temperature scaling: scale logit then re-sigmoid
+    logit = math.log(p / (1 - p))
+    scaled_logit = logit / T
+    return 1 / (1 + math.exp(-scaled_logit))
+
 def score_to_tier(profile: CognitiveProfile, prompt: str) -> Tuple[str, float, int]:
     score = cora_complexity_score(profile, prompt)
     word_count = len(prompt.split())
 
     # ── Prompt-length complexity boost ─────────────────────────────────
-    # Very light boost ONLY for long prompts (20+ words) that already
-    # have some signal.  This avoids the over-routing caused by the
-    # old floor that pushed 46 zero-signal prompts from Tier 0 to Tier 1.
     if score > 0 and word_count >= 20:
         score += 0.04
 
     # ── Minimal floor for zero-score prompts ────────────────────────
-    # Only activates when score is literally 0.0 AND the prompt has
-    # 6+ words (real sentences, not greetings).
-    # Optimized via exhaustive search on judge_results.csv.
     if score == 0.0 and word_count >= 6:
         score = 0.18
 
-    # ── Tier thresholds (machine-optimized from judge_results.csv) ────
-    # Found via brute-force search over 100K+ combinations.
-    # Constraint: maintain 100% within-1 accuracy.
-    # Objective: maximize (exact_accuracy - 2 * under_routing).
-    # Tier 0: score < 0.35
-    # Tier 1: 0.35 <= score < 0.70
-    # Tier 2: 0.70 <= score < 1.15
-    # Tier 3: 1.15 <= score < 1.50
-    # Tier 4: score >= 1.50
+    # ── Tier thresholds ───────────────────────────────────────────────
     THRESHOLDS = [0.35, 0.70, 1.15, 1.50]
     tier_idx = sum(1 for t in THRESHOLDS if score >= t)
     tier_idx = max(0, min(4, tier_idx))
+    tier_label = f"Tier {tier_idx}"
 
-    budget_score = int(min(max(round(score * 100), 1), 100))
+    # ── Confidence Calibration ────────────────────────────────────────
+    # Normalise 0-2 score to a 0-1 confidence-like difficulty score
+    # then apply temperature scaling to fix overconfidence.
+    norm_diff = min(score / 2.0, 1.0)
+    calibrated_diff = calibrate_confidence(norm_diff, tier_label)
+    
+    budget_score = int(min(max(round(calibrated_diff * 100), 1), 100))
 
-    return f"Tier {tier_idx}", score, budget_score
+    return tier_label, score, budget_score

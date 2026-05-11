@@ -195,11 +195,15 @@ CREATIVE_MARKERS = {
 PRECISION_MARKERS = {
     "exact": 8, "precisely": 10, "accurate": 8, "citation": 12,
     "source": 6, "reference": 6, "peer-reviewed": 14,
-    "calculate": 12, "compute": 10, "derive": 12,
+    "calculate": 14, "compute": 10, "derive": 12,
     "proof": 14, "prove": 12, "verify": 10, "prove that": 16, "p != np": 20,
     "np-complete": 16, "formal proof": 16, "complexity theory": 15,
     "theorem": 14, "lemma": 14, "corollary": 14,
     "significant figures": 10, "decimal places": 8,
+    "how many": 10, "how much": 10, "how far": 10, "how long": 10,
+    "total": 8, "per hour": 10, "miles": 8, "kilometers": 8,
+    "percent": 12, "percentage": 12, "what is the": 6, "how old": 10,
+    "if x": 10, "solve for": 14, "word problem": 12,
 }
 
 MATH_PATTERN = re.compile(

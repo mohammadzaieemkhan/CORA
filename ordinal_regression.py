@@ -19,7 +19,7 @@ TIER_MAP = {"Tier 0": 0, "Tier 1": 1, "Tier 2": 2, "Tier 3": 3, "Tier 4": 4}
 df["tier_int"] = df["ground_truth_tier"].map(TIER_MAP)
 
 # ── Features (X) and target (y) ───────────────────────────────────
-# X = your 6 raw dimension scores from cognitive.py
+# X = your 6 raw dimension scores from cognitive_module
 # y = ground truth tier (what tier was actually needed)
 
 feature_cols = [

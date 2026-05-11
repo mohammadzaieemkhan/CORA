@@ -18,8 +18,8 @@ from openai import AsyncOpenAI
 
 logger = logging.getLogger("cora.llm.optimizer")
 
-MODEL_ID = "mistralai/devstral-2-123b-instruct-2512"
-API_KEY_ENV = "NVIDIA_DEVSTRAL_API_KEY"
+MODEL_ID = "mistralai/mistral-large-3-675b-instruct-2512"
+API_KEY_ENV = "NVIDIA_MISTRAL_LARGE_API_KEY"
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 # ── Persistent client ────────────────────────────────────────────────────────
