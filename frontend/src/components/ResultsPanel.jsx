@@ -103,7 +103,7 @@ function parseRoutingReason(reason = '') {
     if (part.startsWith('Routed to')) {
       const route = part.replace('Routed to', '').trim()
       const [rawTier, rawModel] = route.split(/\s*→\s*/)
-      data.routeTier = TIER_MAP[rawTier?.trim()] || rawTier?.trim() || route
+      data.routeTier = rawTier?.trim() || route
       data.routeModel = MODEL_MAP[rawModel?.trim()] || rawModel?.trim() || ''
     }
   })
@@ -237,7 +237,7 @@ export default function ResultsPanel({ query, result, onClear }) {
     routing_reason,
   } = result
 
-  const displayTier = TIER_MAP[tier_assigned] || tier_assigned
+  const displayTier = tier_assigned
   const formattedHTML = formatResponse(response)
 
   return (

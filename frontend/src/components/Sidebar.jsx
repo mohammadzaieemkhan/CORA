@@ -93,7 +93,7 @@ const Sidebar = forwardRef(({ onSelect }, ref) => {
         <div className={styles.list}>
           <AnimatePresence>
             {history.map((item) => {
-              const label = TIER_MAP[item.tier_assigned] || MODEL_MAP[item.model_used] || item.tier_assigned || item.model_used || 'Unknown';
+              const label = item.tier_assigned || MODEL_MAP[item.model_used] || item.model_used || 'Unknown';
               return (
                 <motion.div
                   key={item.id}

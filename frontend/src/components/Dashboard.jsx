@@ -19,7 +19,7 @@ import {
 import styles from './Dashboard.module.css'
 
 // ── SVG Radar Chart (6 dimensions) ──────────────────────────────────────────
-function RadarChart({ profile, size = 200 }) {
+function RadarChart({ profile, size = 280 }) {
   const dims = [
     { key: 'reasoning_depth', label: 'Reasoning' },
     { key: 'domain_specificity', label: 'Domain' },
@@ -28,7 +28,7 @@ function RadarChart({ profile, size = 200 }) {
     { key: 'precision_required', label: 'Precision' },
     { key: 'structural_complexity', label: 'Structure' },
   ]
-  const cx = size / 2, cy = size / 2, r = size * 0.38
+  const cx = size / 2, cy = size / 2, r = size * 0.3
   const angleStep = (Math.PI * 2) / dims.length
 
   const getPoint = (val, i) => {
@@ -79,7 +79,7 @@ function RadarChart({ profile, size = 200 }) {
       ))}
       {/* Labels */}
       {dims.map((dim, i) => {
-        const labelPt = getPoint(120, i)
+        const labelPt = getPoint(135, i)
         return (
           <text
             key={dim.key}
@@ -285,15 +285,6 @@ export default function Dashboard() {
         // Stats are public — always fetch
         const s = await fetchStats()
         
-        // Map raw tiers to descriptive names
-        if (s.routing_distribution) {
-          const mappedDist = {}
-          Object.entries(s.routing_distribution).forEach(([k, v]) => {
-            mappedDist[TIER_MAP[k] || k] = v
-          })
-          s.routing_distribution = mappedDist
-        }
-        
         // Track delta for live indicator
         setPrevStats(prev => {
           if (prev && prev.total_queries !== s.total_queries) {
@@ -349,16 +340,8 @@ export default function Dashboard() {
     if (q.model_used) modelCounts[q.model_used] = (modelCounts[q.model_used] || 0) + 1
   })
   
-  const MODEL_MAP = {
-    'Gemma 2B': 'Edge Processing Unit',
-    'Llama 3.1 8B': 'Logical Reasoning Core',
-    'Mistral 7B v3': 'Core Analytical Unit',
-    'Mixtral 8x7B': 'Advanced Synthesis Engine',
-    'Devstral 123B (NVIDIA)': 'Deep Reasoning Nexus'
-  }
-
   const topModelRaw = Object.entries(modelCounts).sort((a, b) => b[1] - a[1])[0]
-  const topModelName = topModelRaw ? (MODEL_MAP[topModelRaw[0]] || topModelRaw[0]) : null
+  const topModelName = topModelRaw ? topModelRaw[0] : null
 
   // Delta indicators
   const queryDelta = prevStats ? stats.total_queries - prevStats.total_queries : 0
@@ -465,7 +448,7 @@ export default function Dashboard() {
           <div className={styles.vizTitle}>Avg Cognitive Profile</div>
           {avgProfile ? (
             <div className={styles.radarWrap}>
-              <RadarChart profile={avgProfile} size={200} />
+              <RadarChart profile={avgProfile} size={280} />
             </div>
           ) : (
             <div className={styles.vizEmpty}>No cognitive data yet</div>

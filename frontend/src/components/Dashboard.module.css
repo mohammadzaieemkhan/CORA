@@ -240,7 +240,7 @@
 .radarLabel {
   fill: var(--text-dim);
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
 }
