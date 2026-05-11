@@ -52,7 +52,7 @@ TIER_MODEL_MAP = {
 }
 
 # ── Fallback chain (if the assigned tier's model fails) ──────────────────────
-TIER_4_FALLBACKS = [mistral_nemotron, gemma_3n_e4b]
+TIER_4_FALLBACKS = [llama_3_3_super, gemma_3n_e4b]
 
 
 def _build_fallback_chain(primary_module):
