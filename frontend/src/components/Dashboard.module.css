@@ -57,13 +57,27 @@
 }
 
 @keyframes livePulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes iconPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
 }
 
 .metricsRow {

@@ -281,10 +281,10 @@ export default function Dashboard() {
     const loadAll = async () => {
       try {
         const token = localStorage.getItem('cora_token')
-        
+
         // Stats are public — always fetch
         const s = await fetchStats()
-        
+
         // Map raw tiers to descriptive names
         if (s.routing_distribution) {
           const mappedDist = {}
@@ -293,7 +293,7 @@ export default function Dashboard() {
           })
           s.routing_distribution = mappedDist
         }
-        
+
         // Track delta for live indicator
         setPrevStats(prev => {
           if (prev && prev.total_queries !== s.total_queries) {
@@ -302,7 +302,7 @@ export default function Dashboard() {
           return stats
         })
         setStats(s)
-        
+
         // History requires auth — only fetch if logged in
         if (token) {
           const h = await fetchHistory(1, 50)
@@ -348,7 +348,7 @@ export default function Dashboard() {
   history.forEach(q => {
     if (q.model_used) modelCounts[q.model_used] = (modelCounts[q.model_used] || 0) + 1
   })
-  
+
   const MODEL_MAP = {
     'Nemotron Mini 4B': 'Edge Processing Unit',
     'Gemma 3n E4B': 'Edge Fallback Unit',
