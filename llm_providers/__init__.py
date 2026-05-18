@@ -13,13 +13,13 @@ This __init__ exports:
 
 Tier Assignments (2026-05 refresh):
   Tier 0  →  Nemotron Mini 4B        (lightest, simple queries)
-             Solar 10.7B             (fallback)
-  Tier 1  →  Nemotron Nano Reasoning (moderate factual / logical reasoning)
-  Tier 2  →  Mistral Nemotron        (mid-range analytical / creative)
-             Step 3.5 Flash          (fallback)
-  Tier 3  →  Mistral Large 3 675B    (complex reasoning)
-             MiniMax M2.7            (fallback)
+             Gemma 3n E4B            (fallback)
+  Tier 1  →  Nemotron Nano 9B v2     (moderate factual / logical reasoning)
+  Tier 2  →  Nemotron Nano 30B-A3B   (mid-range analytical / creative)
+  Tier 3  →  Nemotron 3 Super 120B   (complex reasoning)
+             Mistral Medium 3.5      (fallback)
   Tier 4  →  Qwen3 Coder 480B       (hardest multi-step / code)
+             Qwen3.5 397B            (fallback)
 """
 
 from __future__ import annotations
@@ -28,45 +28,45 @@ import logging
 from typing import Optional, Tuple
 
 from . import nemotron_mini_4b
-from . import solar_10_7b
-from . import nemotron_nano_reasoning
-from . import mistral_nemotron
-from . import step_3_5_flash
-from . import mistral_large_3
-from . import minimax_m2_7
+from . import gemma_3n_e4b
+from . import nemotron_nano_9b_v2
+from . import nemotron_nano_30b
+from . import nemotron_super_120b
+from . import mistral_medium_3_5
 from . import qwen3_coder
+from . import qwen3_5_397b
 from .base import close_clients
 
 logger = logging.getLogger("cora.llm")
 
 # ── Model Registry (Optimized for Stability) ────────────────────────────────
 MODEL_REGISTRY = [
-    nemotron_mini_4b,     # Tier 0
-    solar_10_7b,          # Tier 0 fallback
-    nemotron_nano_reasoning,   # Tier 1
-    mistral_nemotron,     # Tier 2
-    step_3_5_flash,       # Tier 2 fallback
-    mistral_large_3,      # Tier 3
-    minimax_m2_7,         # Tier 3 fallback
-    qwen3_coder,          # Tier 4
+    nemotron_mini_4b,        # Tier 0
+    gemma_3n_e4b,            # Tier 0 fallback
+    nemotron_nano_9b_v2,     # Tier 1
+    nemotron_nano_30b,       # Tier 2
+    nemotron_super_120b,     # Tier 3
+    mistral_medium_3_5,      # Tier 3 fallback
+    qwen3_coder,             # Tier 4
+    qwen3_5_397b,            # Tier 4 fallback
 ]
 
 # ── Tier → Model Mapping ────────────────────────────────────────────────────
 TIER_MODEL_MAP = {
     "Tier 0": nemotron_mini_4b,
-    "Tier 1": nemotron_nano_reasoning,
-    "Tier 2": mistral_nemotron,
-    "Tier 3": mistral_large_3,
+    "Tier 1": nemotron_nano_9b_v2,
+    "Tier 2": nemotron_nano_30b,
+    "Tier 3": nemotron_super_120b,
     "Tier 4": qwen3_coder,
 }
 
 # ── Fallback chains per tier (if the primary model fails) ────────────────────
 TIER_FALLBACKS = {
-    "Tier 0": [solar_10_7b],
+    "Tier 0": [gemma_3n_e4b],
     "Tier 1": [],
-    "Tier 2": [step_3_5_flash],
-    "Tier 3": [minimax_m2_7],
-    "Tier 4": [],
+    "Tier 2": [],
+    "Tier 3": [mistral_medium_3_5],
+    "Tier 4": [qwen3_5_397b],
 }
 
 

@@ -1,12 +1,11 @@
 """
-llm_providers.qwen3_coder
-─────────────────────────
-Tier 4 — Qwen3 Coder 480B-A35B Instruct
-Frontier MoE model (480B total, 35B active) for the most complex
-multi-step reasoning, code generation, and agentic tasks.
+llm_providers.gemma_3n_e4b
+──────────────────────────
+Tier 0 (Fallback) — Google Gemma 3n E4B IT
+Lightweight fallback model for simple queries.
 
 Provider : NVIDIA Integrate API (OpenAI-compatible)
-Model ID : qwen/qwen3-coder-480b-a35b-instruct
+Model ID : google/gemma-3n-e4b-it
 """
 
 from __future__ import annotations
@@ -16,10 +15,10 @@ import os
 from .base import call_nvidia_openai
 
 # ── Configuration ────────────────────────────────────────────────────────────
-MODEL_ID = "qwen/qwen3-coder-480b-a35b-instruct"
-DISPLAY_NAME = "Qwen3 Coder 480B"
-TIER = "Tier 4"
-API_KEY_ENV = "NVIDIA_QWEN3_CODER_API_KEY"
+MODEL_ID = "google/gemma-3n-e4b-it"
+DISPLAY_NAME = "Gemma 3n E4B"
+TIER = "Tier 0"
+API_KEY_ENV = "NVIDIA_GEMMA_3N_API_KEY"
 
 
 def get_api_key() -> str:
@@ -27,7 +26,7 @@ def get_api_key() -> str:
 
 
 async def call(prompt: str, api_key: str | None = None) -> str:
-    """Send a prompt to Qwen3 Coder 480B and return the response text."""
+    """Send a prompt to Gemma 3n E4B and return the response text."""
     key = api_key or get_api_key()
     if not key:
         raise Exception(f"No API key configured for {DISPLAY_NAME} ({API_KEY_ENV})")
@@ -35,7 +34,7 @@ async def call(prompt: str, api_key: str | None = None) -> str:
         model=MODEL_ID,
         prompt=prompt,
         api_key=key,
-        temperature=0.7,
-        top_p=0.8,
-        max_tokens=4096,
+        temperature=0.20,
+        top_p=0.70,
+        max_tokens=512,
     )

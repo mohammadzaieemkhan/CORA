@@ -1,12 +1,11 @@
 """
-llm_providers.mistral_nemotron
-──────────────────────────────
-Tier 2 — Mistral Nemotron
-Mid-range model for moderate analytical and light creative queries.
-Optimized for agentic workflows, coding, and instruction following.
+llm_providers.mistral_medium_3_5
+────────────────────────────────
+Tier 3 (Fallback) — Mistral Medium 3.5 128B
+Strong reasoning model as fallback for complex queries.
 
 Provider : NVIDIA Integrate API (OpenAI-compatible)
-Model ID : mistralai/mistral-nemotron
+Model ID : mistralai/mistral-medium-3.5-128b
 """
 
 from __future__ import annotations
@@ -16,10 +15,10 @@ import os
 from .base import call_nvidia_openai
 
 # ── Configuration ────────────────────────────────────────────────────────────
-MODEL_ID = "mistralai/mistral-nemotron"
-DISPLAY_NAME = "Mistral Nemotron"
-TIER = "Tier 2"
-API_KEY_ENV = "NVIDIA_NEMOTRON_API_KEY"
+MODEL_ID = "mistralai/mistral-medium-3.5-128b"
+DISPLAY_NAME = "Mistral Medium 3.5"
+TIER = "Tier 3"
+API_KEY_ENV = "NVIDIA_MISTRAL_MEDIUM_API_KEY"
 
 
 def get_api_key() -> str:
@@ -27,7 +26,7 @@ def get_api_key() -> str:
 
 
 async def call(prompt: str, api_key: str | None = None) -> str:
-    """Send a prompt to Mistral Nemotron and return the response text."""
+    """Send a prompt to Mistral Medium 3.5 128B and return the response text."""
     key = api_key or get_api_key()
     if not key:
         raise Exception(f"No API key configured for {DISPLAY_NAME} ({API_KEY_ENV})")
@@ -35,7 +34,10 @@ async def call(prompt: str, api_key: str | None = None) -> str:
         model=MODEL_ID,
         prompt=prompt,
         api_key=key,
-        temperature=0.2,
-        top_p=0.7,
-        max_tokens=1024,
+        temperature=0.70,
+        top_p=1.0,
+        max_tokens=16384,
+        extra_body={
+            "reasoning_effort": "high",
+        },
     )

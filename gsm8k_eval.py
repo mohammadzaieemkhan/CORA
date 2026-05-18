@@ -34,21 +34,21 @@ load_dotenv()
 TIER_CONFIG = {
     "Tier 0": [
         {"model": "nvidia/nemotron-mini-4b-instruct", "key": os.getenv("NVIDIA_NEMOTRON_MINI_API_KEY")},
-        {"model": "upstage/solar-10.7b-instruct", "key": os.getenv("NVIDIA_SOLAR_API_KEY")},
+        {"model": "google/gemma-3n-e4b-it", "key": os.getenv("NVIDIA_GEMMA_3N_API_KEY")},
     ],
     "Tier 1": [
-        {"model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning", "key": os.getenv("NVIDIA_NEMOTRON_NANO_API_KEY")},
+        {"model": "nvidia/nvidia-nemotron-nano-9b-v2", "key": os.getenv("NVIDIA_NEMOTRON_NANO_9B_API_KEY")},
     ],
     "Tier 2": [
-        {"model": "mistralai/mistral-nemotron", "key": os.getenv("NVIDIA_NEMOTRON_API_KEY")},
-        {"model": "stepfun-ai/step-3.5-flash", "key": os.getenv("NVIDIA_STEP_FLASH_API_KEY")},
+        {"model": "nvidia/nemotron-3-nano-30b-a3b", "key": os.getenv("NVIDIA_NEMOTRON_NANO_30B_API_KEY")},
     ],
     "Tier 3": [
-        {"model": "mistralai/mistral-large-3-675b-instruct-2512", "key": os.getenv("NVIDIA_MISTRAL_LARGE_API_KEY")},
-        {"model": "minimaxai/minimax-m2.7", "key": os.getenv("NVIDIA_MINIMAX_API_KEY")},
+        {"model": "nvidia/nemotron-3-super-120b-a12b", "key": os.getenv("NVIDIA_NEMOTRON_SUPER_API_KEY")},
+        {"model": "mistralai/mistral-medium-3.5-128b", "key": os.getenv("NVIDIA_MISTRAL_MEDIUM_API_KEY")},
     ],
     "Tier 4": [
         {"model": "qwen/qwen3-coder-480b-a35b-instruct", "key": os.getenv("NVIDIA_QWEN3_CODER_API_KEY")},
+        {"model": "qwen/qwen3.5-397b-a17b", "key": os.getenv("NVIDIA_QWEN3_5_API_KEY")},
     ],
 }
 
@@ -106,29 +106,55 @@ async def call_nim(client: httpx.AsyncClient, tier: str, prompt: str) -> tuple[s
     for config in configs:
         model = config["model"]
         api_key = config["key"]
-        
+        if not api_key:
+            print(f"  [FAILOVER] No API key configured for {tier} model '{model}'. Skipping...")
+            continue
+            
+        # Optimize max tokens and thinking budgets based on the model ID
+        max_tokens = 2048 if "nano" in model or "super" in model or "coder" in model or "3.5" in model or "medium" in model else 512
+        extra_body = {}
+        if "nano-9b" in model:
+            extra_body = {
+                "max_thinking_tokens": 1024,
+            }
+        elif "nano-30b" in model:
+            extra_body = {
+                "reasoning_budget": 1024,
+                "chat_template_kwargs": {"enable_thinking": True},
+            }
+            
         for attempt in range(2): # 2 attempts per model
             try:
+                payload = {
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": GSM8K_SYSTEM},
+                        {"role": "user",   "content": prompt},
+                    ],
+                    "max_tokens": max_tokens,
+                    "temperature": 0.0,
+                }
+                if extra_body:
+                    payload.update(extra_body)
+                    
                 r = await client.post(
                     NIM_URL,
                     headers={"Authorization": f"Bearer {api_key}"},
-                    json={
-                        "model": model,
-                        "messages": [
-                            {"role": "system", "content": GSM8K_SYSTEM},
-                            {"role": "user",   "content": prompt},
-                        ],
-                        "max_tokens": 512,
-                        "temperature": 0.0,
-                    },
-                    timeout=15,
+                    json=payload,
+                    timeout=60, # Increased from 15 to 60 to prevent timeouts
                 )
                 if r.status_code == 200:
-                    return r.json()["choices"][0]["message"]["content"].strip(), time.time() - t0
+                    res_json = r.json()
+                    message = res_json["choices"][0]["message"]
+                    content = message.get("content")
+                    if content is None:
+                        # Fallback to reasoning_content if content is null
+                        content = message.get("reasoning_content") or ""
+                    return content.strip(), time.time() - t0
                 
                 # If degraded or not found, try next model in tier
                 if r.status_code in [400, 404, 500, 503]:
-                    print(f"  [FAILOVER] {tier} model '{model}' failed ({r.status_code}). Trying backup...")
+                    print(f"  [FAILOVER] {tier} model '{model}' failed ({r.status_code}: {r.text[:200]}). Trying backup...")
                     break # Break inner attempt loop, go to next config
                     
                 if r.status_code == 429 and attempt < 1:
@@ -283,8 +309,8 @@ def compute_and_print_metrics(results: list[dict]):
     print("=" * 55)
 
     # Save per-sample results
-    df.to_csv("gsm8k_results.csv", index=False)
-    print("\n  Full results saved to gsm8k_results.csv")
+    df.to_csv("gsm8kresult.csv", index=False)
+    print("\n  Full results saved to gsm8kresult.csv")
 
     # Append summary row to shared benchmark_summary.csv
     import csv as _csv, datetime as _dt

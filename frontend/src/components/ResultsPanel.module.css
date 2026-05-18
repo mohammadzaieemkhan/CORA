@@ -464,6 +464,77 @@
   border: 1px solid rgba(132, 147, 150, 0.06);
 }
 
+/* ── Typewriter Animation ───────────────────────────────────────────────────── */
+
+.typewriterWord {
+  display: inline;
+  transition: opacity 200ms ease, transform 200ms ease, filter 200ms ease;
+  will-change: opacity, transform;
+}
+
+.wordHidden {
+  opacity: 0;
+  transform: translateY(6px);
+  filter: blur(2px);
+}
+
+.wordRevealed {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.cursorBlink {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1;
+  animation: blinkCursor 1s steps(2) infinite;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+}
+
+@keyframes blinkCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typingIndicator {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.typingIndicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.4;
+  animation: typingBounce 1.4s ease-in-out infinite;
+}
+
+.typingIndicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typingIndicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: 1fr;

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import {
   ArrowRight,
   Brain,
@@ -49,13 +50,13 @@ function parseMetric(value = '') {
 
 const MODEL_MAP = {
   'Nemotron Mini 4B': 'Edge Processing Unit',
-  'Solar 10.7B': 'Edge Fallback Unit',
-  'Nemotron Nano 30B Reasoning': 'Logical Reasoning Core',
-  'Mistral Nemotron': 'Core Analytical Unit',
-  'Step 3.5 Flash': 'Analytical Fallback Unit',
-  'Mistral Large 3': 'Deep Reasoning Engine',
-  'MiniMax M2.7': 'Reasoning Fallback Engine',
-  'Qwen3 Coder 480B': 'Frontier Code Nexus'
+  'Gemma 3n E4B': 'Edge Fallback Unit',
+  'Nemotron Nano 9B v2': 'Logical Reasoning Core',
+  'Nemotron Nano 30B-A3B': 'Core Analytical Unit',
+  'Nemotron 3 Super 120B': 'Deep Reasoning Engine',
+  'Mistral Medium 3.5': 'Reasoning Fallback Engine',
+  'Qwen3 Coder 480B': 'Frontier Code Nexus',
+  'Qwen3.5 397B': 'Frontier Fallback Nexus'
 }
 
 function parseRoutingReason(reason = '') {
@@ -226,6 +227,92 @@ const TIER_MAP = {
   'Tier 4': 'Tier 4'
 }
 
+// ── Typewriter Text Component ────────────────────────────────────────────────
+function TypewriterText({ text, isStreaming }) {
+  const [revealedCount, setRevealedCount] = useState(0)
+  const containerRef = useRef(null)
+  const prevTextRef = useRef('')
+
+  // Split text into words (preserving whitespace structure)
+  const words = useMemo(() => {
+    if (!text) return []
+    return text.split(/( +)/)
+  }, [text])
+
+  useEffect(() => {
+    // When new text arrives (streaming), animate the new words
+    if (text !== prevTextRef.current) {
+      const prevWords = prevTextRef.current ? prevTextRef.current.split(/( +)/) : []
+      const newWordCount = words.length
+      
+      // If text grew, reveal new words progressively
+      if (newWordCount > prevWords.length) {
+        const startFrom = revealedCount
+        const wordsToReveal = newWordCount - startFrom
+        
+        if (wordsToReveal > 0) {
+          let current = startFrom
+          const revealBatch = () => {
+            // Reveal 3-5 words per tick for smooth but fast animation
+            current = Math.min(current + 4, newWordCount)
+            setRevealedCount(current)
+            if (current < newWordCount) {
+              requestAnimationFrame(revealBatch)
+            }
+          }
+          requestAnimationFrame(revealBatch)
+        }
+      } else {
+        // Text was replaced entirely (e.g. history select)
+        setRevealedCount(newWordCount)
+      }
+      prevTextRef.current = text
+    }
+  }, [text, words.length])
+
+  // Auto-scroll to bottom as text reveals
+  useEffect(() => {
+    if (containerRef.current && isStreaming) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight
+    }
+  }, [revealedCount, isStreaming])
+
+  if (!text) {
+    return (
+      <div className={styles.responseBody} ref={containerRef}>
+        <span className={styles.typingIndicator}>
+          <span /><span /><span />
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.responseBody} ref={containerRef}>
+      {words.map((word, i) => {
+        const isRevealed = i < revealedCount
+        // Check if this is a newline break
+        if (word === '') return null
+        if (word.trim() === '') return <span key={i}>{word}</span>
+        
+        return (
+          <span
+            key={i}
+            className={`${styles.typewriterWord} ${isRevealed ? styles.wordRevealed : styles.wordHidden}`}
+            style={{
+              transitionDelay: `${Math.max(0, (i - (revealedCount - 8)) * 12)}ms`,
+            }}
+            dangerouslySetInnerHTML={{ __html: formatResponse(word) }}
+          />
+        )
+      })}
+      {isStreaming && (
+        <span className={styles.cursorBlink}>▊</span>
+      )}
+    </div>
+  )
+}
+
 export default function ResultsPanel({ query, result, onClear }) {
   if (!result) return null
 
@@ -241,7 +328,7 @@ export default function ResultsPanel({ query, result, onClear }) {
   } = result
 
   const displayTier = TIER_MAP[tier_assigned] || tier_assigned
-  const formattedHTML = formatResponse(response)
+  const isStreaming = model_used === 'Routing...' || (response && !latency_ms)
 
   return (
     <motion.section
@@ -274,15 +361,7 @@ export default function ResultsPanel({ query, result, onClear }) {
               <div className={styles.cardTitle}>Generated Output</div>
               <div className={styles.badge}>{model_used}</div>
             </div>
-            <div
-              className={styles.responseBody}
-              dangerouslySetInnerHTML={{
-                __html: formattedHTML
-                  .split('\n')
-                  .map(line => line || '<br/>')
-                  .join('<br/>')
-              }}
-            />
+            <TypewriterText text={response} isStreaming={isStreaming} />
           </div>
         </div>
 

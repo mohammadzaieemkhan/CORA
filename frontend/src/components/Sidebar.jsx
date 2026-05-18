@@ -18,13 +18,13 @@ const TIER_MAP = {
 
 const MODEL_MAP = {
   'Nemotron Mini 4B': 'Edge',
-  'Solar 10.7B': 'Edge',
-  'Nemotron Nano 30B Reasoning': 'Logical',
-  'Mistral Nemotron': 'Analytical',
-  'Step 3.5 Flash': 'Analytical',
-  'Mistral Large 3': 'Reasoning',
-  'MiniMax M2.7': 'Reasoning',
-  'Qwen3 Coder 480B': 'Deep'
+  'Gemma 3n E4B': 'Edge',
+  'Nemotron Nano 9B v2': 'Logical',
+  'Nemotron Nano 30B-A3B': 'Analytical',
+  'Nemotron 3 Super 120B': 'Reasoning',
+  'Mistral Medium 3.5': 'Reasoning',
+  'Qwen3 Coder 480B': 'Deep',
+  'Qwen3.5 397B': 'Deep'
 }
 
 const Sidebar = forwardRef(({ onSelect }, ref) => {

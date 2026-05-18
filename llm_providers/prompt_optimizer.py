@@ -1,11 +1,11 @@
 """
 llm_providers.prompt_optimizer
 ──────────────────────────────
-Dedicated model for Prompt Optimization: Mistral Large 3 675B
+Dedicated model for Prompt Optimization: Nemotron Nano 30B-A3B
 Provider : NVIDIA Integrate API
 
-Uses Mistral Large 3 as the optimizer engine — strong reasoning
-capabilities without the high latency of Tier 4 models.
+Uses Nemotron Nano 30B-A3B as the optimizer engine — strong reasoning
+capabilities with thinking enabled for high-quality prompt compression.
 
 OPTIMISED: Persistent client, reduced max_tokens, tighter timeout.
 """
@@ -18,7 +18,7 @@ from openai import AsyncOpenAI
 
 logger = logging.getLogger("cora.llm.optimizer")
 
-MODEL_ID = "mistralai/mistral-nemotron"
+MODEL_ID = "nvidia/nemotron-3-nano-30b-a3b"
 API_KEY_ENV = "NVIDIA_PROMPT_OPTIMIZER_API_KEY"
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 
@@ -44,7 +44,7 @@ def _get_client(key: str) -> AsyncOpenAI:
 
 
 async def optimize_prompt(prompt: str, api_key: str | None = None) -> str:
-    """Use Mistral Large 3 to automatically restructure a prompt for maximum clarity."""
+    """Use Nemotron Nano 30B-A3B to automatically restructure a prompt for maximum clarity."""
     key = api_key or get_api_key()
     if not key:
         raise Exception(f"No API key configured for Prompt Optimizer ({API_KEY_ENV})")
@@ -70,8 +70,12 @@ async def optimize_prompt(prompt: str, api_key: str | None = None) -> str:
         messages=[{"role": "user", "content": system_instruction}],
         temperature=1.0,
         top_p=1.0,
-        max_tokens=1024,
+        max_tokens=16384,
         stream=True,
+        extra_body={
+            "reasoning_budget": 16384,
+            "chat_template_kwargs": {"enable_thinking": True},
+        },
     )
 
     async for chunk in completion:

@@ -564,7 +564,7 @@ async def handle_query_stream(
         full_response = ""
         try:
             from llm_providers import TIER_MODEL_MAP, _build_fallback_chain, TIER_FALLBACKS
-            import llm_providers.nemotron_mini_4b as nemotron_mini_4b
+            from llm_providers import nemotron_mini_4b
 
             primary = TIER_MODEL_MAP.get(tier)
             if not primary:

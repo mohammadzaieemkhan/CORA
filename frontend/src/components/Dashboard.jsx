@@ -351,13 +351,13 @@ export default function Dashboard() {
   
   const MODEL_MAP = {
     'Nemotron Mini 4B': 'Edge Processing Unit',
-    'Solar 10.7B': 'Edge Fallback Unit',
-    'Nemotron Nano 30B Reasoning': 'Logical Reasoning Core',
-    'Mistral Nemotron': 'Core Analytical Unit',
-    'Step 3.5 Flash': 'Analytical Fallback Unit',
-    'Mistral Large 3': 'Deep Reasoning Engine',
-    'MiniMax M2.7': 'Reasoning Fallback Engine',
-    'Qwen3 Coder 480B': 'Frontier Code Nexus'
+    'Gemma 3n E4B': 'Edge Fallback Unit',
+    'Nemotron Nano 9B v2': 'Logical Reasoning Core',
+    'Nemotron Nano 30B-A3B': 'Core Analytical Unit',
+    'Nemotron 3 Super 120B': 'Deep Reasoning Engine',
+    'Mistral Medium 3.5': 'Reasoning Fallback Engine',
+    'Qwen3 Coder 480B': 'Frontier Code Nexus',
+    'Qwen3.5 397B': 'Frontier Fallback Nexus'
   }
 
   const topModelRaw = Object.entries(modelCounts).sort((a, b) => b[1] - a[1])[0]

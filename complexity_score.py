@@ -128,7 +128,7 @@ def score_to_tier(profile: CognitiveProfile, prompt: str) -> Tuple[str, float, i
         score = 0.18
 
     # ── Tier thresholds ───────────────────────────────────────────────
-    THRESHOLDS = [0.35, 0.70, 1.15, 1.50]
+    THRESHOLDS = [0.20, 0.50, 0.90, 1.55]
     tier_idx = sum(1 for t in THRESHOLDS if score >= t)
     tier_idx = max(0, min(4, tier_idx))
     tier_label = f"Tier {tier_idx}"

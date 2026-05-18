@@ -2,9 +2,9 @@
 CORA Calibration Judge
 ─────────────────────
 Sends each prompt to its assigned tier AND one tier lower,
-scores both responses using Mistral Large as judge (0/1/2),
+scores both responses using Nemotron Nano 30B as judge (0/1/2),
 computes under-routing rate and accuracy metrics.
-Judge model: mistralai/mistral-nemotron (via NVIDIA NIM)
+Judge model: nvidia/nemotron-3-nano-30b-a3b (via NVIDIA NIM)
 """
 
 import json
@@ -23,22 +23,22 @@ load_dotenv()
 # Per-model API keys matching .env configuration
 TIER_KEYS = {
     "Tier 0": os.getenv("NVIDIA_NEMOTRON_MINI_API_KEY"),
-    "Tier 1": os.getenv("NVIDIA_NEMOTRON_NANO_API_KEY"),
-    "Tier 2": os.getenv("NVIDIA_NEMOTRON_API_KEY"),
-    "Tier 3": os.getenv("NVIDIA_MISTRAL_LARGE_API_KEY"),
+    "Tier 1": os.getenv("NVIDIA_NEMOTRON_NANO_9B_API_KEY"),
+    "Tier 2": os.getenv("NVIDIA_NEMOTRON_NANO_30B_API_KEY"),
+    "Tier 3": os.getenv("NVIDIA_NEMOTRON_SUPER_API_KEY"),
     "Tier 4": os.getenv("NVIDIA_QWEN3_CODER_API_KEY"),
 }
-JUDGE_KEY = os.getenv("NVIDIA_NEMOTRON_API_KEY")
+JUDGE_KEY = os.getenv("NVIDIA_NEMOTRON_NANO_30B_API_KEY")
 
 TIER_MODELS = {
     "Tier 0": "nvidia/nemotron-mini-4b-instruct",
-    "Tier 1": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
-    "Tier 2": "mistralai/mistral-nemotron",
-    "Tier 3": "mistralai/mistral-large-3-675b-instruct-2512",
+    "Tier 1": "nvidia/nvidia-nemotron-nano-9b-v2",
+    "Tier 2": "nvidia/nemotron-3-nano-30b-a3b",
+    "Tier 3": "nvidia/nemotron-3-super-120b-a12b",
     "Tier 4": "qwen/qwen3-coder-480b-a35b-instruct",
 }
 
-JUDGE_MODEL = "mistralai/mistral-nemotron"
+JUDGE_MODEL = "nvidia/nemotron-3-nano-30b-a3b"
 TIER_ORDER  = ["Tier 0", "Tier 1", "Tier 2", "Tier 3", "Tier 4"]
 NIM_URL     = "https://integrate.api.nvidia.com/v1/chat/completions"
 
@@ -316,7 +316,7 @@ async def main():
         if 5 < len(item["instruction"].split()) < 150
     ][:100]
 
-    print(f"Running judge on {len(prompts)} prompts using Mistral Large as judge...")
+    print(f"Running judge on {len(prompts)} prompts using Nemotron Nano 30B as judge...")
     print(f"Judge model : {JUDGE_MODEL}")
     print(f"Batch size  : 3 prompts  |  pause: 3s between batches\n")
 
