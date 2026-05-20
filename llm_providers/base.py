@@ -68,7 +68,13 @@ async def call_nvidia_openai(
 ) -> str:
     """
     Call an NVIDIA-hosted model via the OpenAI-compatible chat/completions API.
-    Used by: Gemma 2B, Llama 3.1 8B, Mistral 7B, Mixtral 8x7B, and Reasoning models.
+    Used by: Nemotron Mini/Nano/Super, Gemma 3n, Mistral Medium 3.5, Qwen3 Coder,
+    Qwen3.5, and other reasoning models.
+
+    Thinking-model note: models with reasoning/thinking enabled (e.g. Nemotron Nano
+    9B v2, Nemotron Nano 30B, Nemotron Super 120B) may return `content=None` and
+    put their final answer in `reasoning_content`. We fall back to `reasoning_content`
+    so the caller always receives a non-None string.
     """
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -89,7 +95,16 @@ async def call_nvidia_openai(
     r = await client.post(NVIDIA_CHAT_ENDPOINT, json=payload, headers=headers)
     if r.status_code != 200:
         raise Exception(f"NVIDIA API {r.status_code}: {r.text[:500]}")
-    return r.json()["choices"][0]["message"]["content"]
+
+    # Thinking models (enable_thinking=True / min_thinking_tokens) may return
+    # content=None with the answer in reasoning_content.  Always return a string.
+    msg = r.json()["choices"][0]["message"]
+    content = msg.get("content")
+    if content is not None:
+        return content
+    # Fall back to reasoning_content (thinking models)
+    reasoning = msg.get("reasoning_content") or ""
+    return reasoning
 
 
 async def call_github_openai(

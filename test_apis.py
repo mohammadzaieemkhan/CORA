@@ -42,7 +42,8 @@ async def test_model(client, label, model_id, key_env):
         )
         elapsed = round(time.time() - t0, 1)
         if r.status_code == 200:
-            text = r.json()["choices"][0]["message"]["content"][:60]
+            msg = r.json()["choices"][0]["message"]
+            text = (msg.get("content") or msg.get("reasoning_content") or "")[:60]
             print(f"  [OK]      {label:40s} | {elapsed}s | {text}")
         else:
             err = r.text[:150]

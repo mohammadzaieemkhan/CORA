@@ -46,7 +46,7 @@ async def test(client, label, model_id, key_env, extra_body):
             data = r.json()
             ch = data.get("choices", [{}])[0]
             msg = ch.get("message", {})
-            text = msg.get("content", "") or ""
+            text = (msg.get("content") or msg.get("reasoning_content") or "")
             print(f"  [OK]      {label:25s} | {elapsed}s | {text[:60]}")
         else:
             print(f"  [HTTP {r.status_code}] {label:25s} | {elapsed}s | {r.text[:200]}")
