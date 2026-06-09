@@ -315,5 +315,3 @@ CORA/
 - All external links use `rel="noopener noreferrer"` to prevent tabnabbing
 
 ---
-#   C O R A  
- 
