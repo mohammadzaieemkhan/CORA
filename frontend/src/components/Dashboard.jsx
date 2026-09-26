@@ -350,13 +350,24 @@ export default function Dashboard() {
   })
 
   const MODEL_MAP = {
+    'Gemma 4 26B (a4b)': 'Edge Neural Unit',
+    'Gemma 4 26B (OpenRouter)': 'Edge Fallback Unit',
+    'Gemini 3.5 Flash Lite': 'Logical Flash Core',
+    'Google Gemma 2 9B (Free)': 'Logical Fallback Core',
+    'Llama 3.1 8B (OpenRouter)': 'Logical Fallback Core',
+    'DeepSeek V4.1 Flash': 'Multimodal Flash Engine',
     'Nemotron Mini 4B': 'Edge Processing Unit',
     'Gemma 3n E4B': 'Edge Fallback Unit',
     'Nemotron Nano 9B v2': 'Logical Reasoning Core',
     'Nemotron Nano 30B-A3B': 'Core Analytical Unit',
+    'Muse Glimmer 30B': 'Core Analytical Unit',
+    'Nemotron 3.5 Lightning 30B': 'Analytical Fallback Core',
     'Nemotron 3 Super 120B': 'Deep Reasoning Engine',
+    'GLM 5.3 Flash': 'Flash Reasoning Engine',
     'Mistral Medium 3.5': 'Reasoning Fallback Engine',
     'Qwen3 Coder 480B': 'Frontier Code Nexus',
+    'Kimi K3': 'Frontier Multimodal Nexus',
+    'Nemotron 3 Ultra 550B': 'Frontier Ultra Engine',
     'Qwen3.5 397B': 'Frontier Fallback Nexus'
   }
 

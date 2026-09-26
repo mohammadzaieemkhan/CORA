@@ -172,8 +172,9 @@ class RuleBasedScorer:
         if profile.structural_complexity >= 25:
             scores[TaskType.MULTI_STEP] = profile.structural_complexity * 0.85
 
-        # Factual
-        if profile.domain_specificity >= 20 and profile.reasoning_depth < 30:
+        # Factual — but NOT when code signals are also strong
+        if (profile.domain_specificity >= 20 and profile.reasoning_depth < 30
+                and profile.code_complexity < 20):
             scores[TaskType.FACTUAL] = profile.domain_specificity * 0.7
 
         # Conversational (default — only when ALL scores are trivially low)

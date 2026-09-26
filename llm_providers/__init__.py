@@ -1,25 +1,22 @@
 """
 llm_providers
 ─────────────
-Central registry for all LLM models used by CORA.
+Central registry for active LLM models used by CORA.
 
-Each model lives in its own file with a consistent interface:
-  - MODEL_ID, DISPLAY_NAME, TIER, get_api_key(), call(prompt, api_key?)
+Working Model Stack:
+  Tier 0 Primary   →  Google Gemma 4 26B (a4b)       (gemma-4-26b-a4b-it)
+  Tier 0 Fallback  →  Gemma 4 26B (OpenRouter)       (google/gemma-4-26b-a4b-it:free)
+  Tier 1 Primary   →  Google Gemini 3.5 Flash Lite   (gemini-3.5-flash-lite)
+  Tier 1 Fallback  →  Google Gemma 2 9B (OpenRouter) (google/gemma-2-9b-it:free)
+  Tier 2 Primary   →  Meta Muse Glimmer 30B          (meta/muse-glimmer-30b)
+  Tier 2 Fallback  →  Nemotron 3.5 Lightning 30B     (nvidia/nemotron-3.5-lightning-30b-a3b)
+  Tier 3 Primary   →  Nemotron 3 Super 120B          (nvidia/nemotron-3-super-120b-a12b)
+  Tier 3 Fallback  →  DeepSeek V4.1 Flash (NVIDIA)   (deepseek-ai/deepseek-v4.1-flash)
+  Tier 4 Primary   →  Nemotron 3 Ultra 550B          (nvidia/nemotron-3-ultra-550b-a55b)
+  Tier 4 Fallback  →  DeepSeek V4.1 Flash / Kimi K3  (deepseek-ai/deepseek-v4.1-flash)
 
-This __init__ exports:
-  - TIER_MODEL_MAP   — maps tier names to (module, display_name) tuples
-  - call_llm()       — routes a prompt to the right model with fallback
-  - MODEL_REGISTRY   — ordered list of all registered model modules
-
-Tier Assignments (2026-05 refresh):
-  Tier 0  →  Nemotron Mini 4B        (lightest, simple queries)
-             Gemma 3n E4B            (fallback)
-  Tier 1  →  Nemotron Nano 9B v2     (moderate factual / logical reasoning)
-  Tier 2  →  Nemotron Nano 30B-A3B   (mid-range analytical / creative)
-  Tier 3  →  Nemotron 3 Super 120B   (complex reasoning)
-             Mistral Medium 3.5      (fallback)
-  Tier 4  →  Qwen3 Coder 480B       (hardest multi-step / code)
-             Qwen3.5 397B            (fallback)
+Prompt Optimizer:
+  Google Gemini Top-Tier (gemini-3.8-flash / gemini-3.5-flash-lite)
 """
 
 from __future__ import annotations
@@ -27,51 +24,57 @@ from __future__ import annotations
 import logging
 from typing import Optional, Tuple
 
-from . import nemotron_mini_4b
-from . import gemma_3n_e4b
-from . import nemotron_nano_9b_v2
-from . import nemotron_nano_30b
+from . import gemma_4_26b
+from . import gemma_4_26b_openrouter
+from . import gemini_3_5_flash_lite
+from . import gemma_2_9b_openrouter
+from . import muse_glimmer_30b
+from . import nemotron_3_5_lightning_30b
 from . import nemotron_super_120b
-from . import mistral_medium_3_5
-from . import qwen3_coder
-from . import qwen3_5_397b
+from . import glm_5_3_flash
+from . import nemotron_3_ultra_550b
+from . import kimi_k3
+from . import deepseek_v4_1_flash
 from .base import close_clients
 
 logger = logging.getLogger("cora.llm")
 
-# ── Model Registry (Optimized for Stability) ────────────────────────────────
+# ── Model Registry (Active models) ──────────────────────────────────────────
 MODEL_REGISTRY = [
-    nemotron_mini_4b,        # Tier 0
-    gemma_3n_e4b,            # Tier 0 fallback
-    nemotron_nano_9b_v2,     # Tier 1
-    nemotron_nano_30b,       # Tier 2
-    nemotron_super_120b,     # Tier 3
-    mistral_medium_3_5,      # Tier 3 fallback
-    qwen3_coder,             # Tier 4
-    qwen3_5_397b,            # Tier 4 fallback
+    gemma_4_26b,                  # Tier 0 Primary
+    gemma_4_26b_openrouter,       # Tier 0 Fallback
+    gemini_3_5_flash_lite,        # Tier 1 Primary
+    gemma_2_9b_openrouter,        # Tier 1 Fallback
+    muse_glimmer_30b,             # Tier 2 Primary
+    nemotron_3_5_lightning_30b,   # Tier 2 Fallback
+    nemotron_super_120b,          # Tier 3 Primary
+    glm_5_3_flash,                # Tier 3 Fallback
+    nemotron_3_ultra_550b,        # Tier 4 Primary
+    deepseek_v4_1_flash,          # Tier Fallback
+    kimi_k3,                      # Tier 4 Fallback
 ]
 
 # ── Tier → Model Mapping ────────────────────────────────────────────────────
 TIER_MODEL_MAP = {
-    "Tier 0": nemotron_mini_4b,
-    "Tier 1": nemotron_nano_9b_v2,
-    "Tier 2": nemotron_nano_30b,
+    "Tier 0": gemma_4_26b,
+    "Tier 1": gemini_3_5_flash_lite,
+    "Tier 2": muse_glimmer_30b,
     "Tier 3": nemotron_super_120b,
-    "Tier 4": qwen3_coder,
+    "Tier 4": nemotron_3_ultra_550b,
 }
 
-# ── Fallback chains per tier (if the primary model fails) ────────────────────
+# ── Fallback chains per tier ────────────────────────────────────────────────
 TIER_FALLBACKS = {
-    "Tier 0": [gemma_3n_e4b],
-    "Tier 1": [],
-    "Tier 2": [],
-    "Tier 3": [mistral_medium_3_5],
-    "Tier 4": [qwen3_5_397b],
+    "Tier 0": [gemma_4_26b_openrouter, gemini_3_5_flash_lite, muse_glimmer_30b],
+    "Tier 1": [gemma_2_9b_openrouter, gemma_4_26b, muse_glimmer_30b],
+    "Tier 2": [nemotron_3_5_lightning_30b, gemini_3_5_flash_lite, nemotron_super_120b],
+    "Tier 3": [deepseek_v4_1_flash, glm_5_3_flash, nemotron_3_ultra_550b, muse_glimmer_30b],
+    "Tier 4": [deepseek_v4_1_flash, kimi_k3, nemotron_super_120b, muse_glimmer_30b],
 }
 
 
 def _build_fallback_chain(primary_module):
-    """Build a fallback chain: try every other model in the registry."""
+    """Build a fallback chain: try every other working model in the registry."""
     return [m for m in MODEL_REGISTRY if m is not primary_module]
 
 
@@ -87,12 +90,8 @@ async def call_llm(
     Returns:
         (response_text, display_model_name)
     """
-    primary = TIER_MODEL_MAP.get(tier)
-    if not primary:
-        primary = nemotron_mini_4b  # ultimate fallback
+    primary = TIER_MODEL_MAP.get(tier, muse_glimmer_30b)
 
-    # Build attempt order: primary first, then tier-specific fallbacks,
-    # then general fallback chain for robustness
     tier_fallbacks = TIER_FALLBACKS.get(tier, [])
     attempt_order = [primary] + tier_fallbacks + _build_fallback_chain(primary)
 
@@ -125,8 +124,7 @@ async def call_llm(
     return f"[Error: {error_detail}]", primary.DISPLAY_NAME
 
 
-# ── Convenience: get display info for a tier ─────────────────────────────────
 def get_tier_model_info(tier: str) -> Tuple[str, str]:
     """Return (model_id, display_name) for the primary model of a tier."""
-    module = TIER_MODEL_MAP.get(tier, nemotron_mini_4b)
+    module = TIER_MODEL_MAP.get(tier, muse_glimmer_30b)
     return module.MODEL_ID, module.DISPLAY_NAME

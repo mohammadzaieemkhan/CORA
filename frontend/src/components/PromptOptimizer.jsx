@@ -16,7 +16,7 @@ export default function PromptOptimizer({ isOptimizing, error, rawPrompt, optimi
         <div className={styles.sparkleWrap}>
           <Sparkle size={32} weight="duotone" className={styles.sparkleIcon} />
         </div>
-        <h3>AI Optimization Analytics</h3>
+        <h3>Prompt Optimization in Process</h3>
         <p>Analyzing cognitive structure and restructuring for maximum efficiency...</p>
         <div className={styles.gridContainer}>
           <div className={styles.gridCell} />

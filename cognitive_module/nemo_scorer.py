@@ -4,7 +4,7 @@ cognitive_module.nemo_scorer
 NVIDIA NeMo Prompt Task and Complexity Classifier Integration.
 Maps DeBERTa-v3 output to CORA CognitiveProfile objects.
 """
-
+from __future__ import annotations
 import logging
 import os
 from typing import Optional
@@ -244,9 +244,80 @@ class NeMoScorer:
             precision = int(round(res["constraint_ct"][0] * 100))
             struct = int(round(res["contextual_knowledge"][0] * 100))
             
-            # Provide at least some code complexity if task is CODE
-            code_complexity = reasoning if cora_task == TaskType.CODE else 0
+            # Provide at least some code complexity if task is CODE or DEBUGGING
+            code_complexity = reasoning if cora_task in (TaskType.CODE, TaskType.DEBUGGING) else 0
+
+            # ── Sanity check & Blending: cross-reference with rule scorer on normalized text ──
+            rule_profile = self._fallback.score(prompt)
             
+            # 1. Technical Task Type Upgrading / Boosting
+            # If the rule-based keyword/regex scorer detects a highly specific technical/coding/math task
+            # but NeMo's general classifier missed it or gave it a lower-priority classification, upgrade it.
+            TASK_PRIORITY = {
+                TaskType.MATHEMATICAL: 4,
+                TaskType.CODE: 3,
+                TaskType.DEBUGGING: 3,
+                TaskType.ANALYTICAL: 2,
+                TaskType.MULTI_STEP: 1,
+                TaskType.FACTUAL: 0,
+                TaskType.CREATIVE: -1,
+                TaskType.CONVERSATIONAL: -2,
+            }
+            rule_pri = TASK_PRIORITY.get(rule_profile.task_type, -2)
+            nemo_pri = TASK_PRIORITY.get(cora_task, -2)
+            if rule_pri > nemo_pri:
+                cora_task = rule_profile.task_type
+                conf = max(conf, rule_profile.confidence)
+
+            # 2. Score Blending & Upgrading for Technical tasks
+            # Ensure NeMo doesn't under-score technical tasks that are clearly identified by keyword rules
+            if rule_profile.task_type in (TaskType.CODE, TaskType.DEBUGGING, TaskType.MATHEMATICAL, TaskType.ANALYTICAL):
+                reasoning = max(reasoning, rule_profile.reasoning_depth)
+                domain_know = max(domain_know, rule_profile.domain_specificity)
+                creativity = max(creativity, rule_profile.creative_demand)
+                precision = max(precision, rule_profile.precision_required)
+                struct = max(struct, rule_profile.structural_complexity)
+                if cora_task in (TaskType.CODE, TaskType.DEBUGGING):
+                    code_complexity = max(reasoning, rule_profile.code_complexity)
+
+            # 3. Downward Sanity Check (fooling NeMo with fancy vocabulary)
+            # If NeMo scores are very high but the rule scorer sees almost nothing, NeMo is likely over-scoring.
+            nemo_dims = [reasoning, domain_know, creativity, precision, struct]
+            rule_dims = [
+                rule_profile.reasoning_depth,
+                rule_profile.domain_specificity,
+                rule_profile.creative_demand,
+                rule_profile.precision_required,
+                rule_profile.structural_complexity,
+            ]
+            nemo_avg = sum(nemo_dims) / max(len(nemo_dims), 1)
+            rule_avg = sum(rule_dims) / max(len(rule_dims), 1)
+
+            # If rule scorer sees <30% of what NeMo sees, blend scores downward
+            if nemo_avg > 10 and rule_avg < nemo_avg * 0.30:
+                blend = 0.5
+                reasoning = int(reasoning * blend + rule_profile.reasoning_depth * (1 - blend))
+                domain_know = int(domain_know * blend + rule_profile.domain_specificity * (1 - blend))
+                creativity = int(creativity * blend + rule_profile.creative_demand * (1 - blend))
+                precision = int(precision * blend + rule_profile.precision_required * (1 - blend))
+                struct = int(struct * blend + rule_profile.structural_complexity * (1 - blend))
+                if cora_task in (TaskType.CODE, TaskType.DEBUGGING):
+                    code_complexity = int(code_complexity * blend + rule_profile.code_complexity * (1 - blend))
+                
+                if rule_profile.task_type == TaskType.CONVERSATIONAL:
+                    cora_task = TaskType.CONVERSATIONAL
+                    conf = max(conf * 0.6, rule_profile.confidence)
+                logger.info(
+                    f"NeMo downward sanity check triggered: nemo_avg={nemo_avg:.1f}, "
+                    f"rule_avg={rule_avg:.1f} — blended scores downward."
+                )
+
+            # Merge rule-based signals into NeMo to prevent unwarranted verbosity penalties
+            # and enrich frontend explainability cards
+            nemo_signals = [f"nemo_base_score:{res['prompt_complexity_score'][0]:.3f}"]
+            if rule_profile.signals:
+                nemo_signals.extend(rule_profile.signals)
+
             return CognitiveProfile(
                 reasoning_depth=min(100, reasoning),
                 domain_specificity=min(100, domain_know),
@@ -256,7 +327,7 @@ class NeMoScorer:
                 structural_complexity=min(100, struct),
                 task_type=cora_task,
                 confidence=float(conf),
-                signals=[f"nemo_base_score:{res['prompt_complexity_score'][0]:.3f}"],
+                signals=nemo_signals,
                 scorer_used="nemo"
             )
             

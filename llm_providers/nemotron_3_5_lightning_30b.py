@@ -1,11 +1,11 @@
 """
-llm_providers.qwen3_5_397b
-──────────────────────────
-Tier 4 (Fallback) — Qwen3.5 397B-A17B
-Frontier MoE model as fallback for the most complex tasks.
+llm_providers.nemotron_3_5_lightning_30b
+────────────────────────────────────────
+Tier 2 Fallback — NVIDIA Nemotron 3.5 Lightning 30B-A3B
+MoE reasoning model with extended thinking capabilities.
 
 Provider : NVIDIA Integrate API (OpenAI-compatible)
-Model ID : qwen/qwen3.5-397b-a17b
+Model ID : nvidia/nemotron-3.5-lightning-30b-a3b
 """
 
 from __future__ import annotations
@@ -15,10 +15,10 @@ import os
 from .base import call_nvidia_openai
 
 # ── Configuration ────────────────────────────────────────────────────────────
-MODEL_ID = "qwen/qwen3.5-397b-a17b"
-DISPLAY_NAME = "Qwen3.5 397B"
-TIER = "Tier 4"
-API_KEY_ENV = "NVIDIA_QWEN3_5_API_KEY"
+MODEL_ID = "nvidia/nemotron-3.5-lightning-30b-a3b"
+DISPLAY_NAME = "Nemotron 3.5 Lightning 30B"
+TIER = "Tier 2"
+API_KEY_ENV = "NVIDIA_NEMOTRON_3_5_LIGHTNING_API_KEY"
 
 
 def get_api_key() -> str:
@@ -26,7 +26,7 @@ def get_api_key() -> str:
 
 
 async def call(prompt: str, api_key: str | None = None) -> str:
-    """Send a prompt to Qwen3.5 397B-A17B and return the response text."""
+    """Send a prompt to Nemotron 3.5 Lightning 30B and return the response text."""
     key = api_key or get_api_key()
     if not key:
         raise Exception(f"No API key configured for {DISPLAY_NAME} ({API_KEY_ENV})")
@@ -34,13 +34,15 @@ async def call(prompt: str, api_key: str | None = None) -> str:
         model=MODEL_ID,
         prompt=prompt,
         api_key=key,
-        temperature=0.60,
+        temperature=1.0,
         top_p=0.95,
-        max_tokens=16384,
+        max_tokens=8192,
         extra_body={
             "chat_template_kwargs": {"enable_thinking": True},
-            "top_k": 20,
-            "presence_penalty": 0,
-            "repetition_penalty": 1,
+            "reasoning_budget": 8192,
         },
+        system_prompt=(
+            "You are a helpful assistant. Be clear, accurate, and concise. "
+            "Use markdown formatting where appropriate."
+        ),
     )

@@ -84,6 +84,29 @@ DOMAIN_VOCAB: Dict[str, List[str]] = {
         "frontend", "backend", "full-stack", "devops", "ci/cd",
         "deep learning", "reinforcement learning", "fine-tuning", "inference",
         "gpu", "batch size", "epoch", "loss function", "optimizer",
+        # Data structures & algorithms (from cognitive.py)
+        "red-black tree", "avl tree", "b-tree", "trie", "heap",
+        "insertion", "deletion", "balancing", "traversal",
+        "np", "np-hard", "np-complete", "complexity theory",
+        "implement", "red-black", "memoization", "backtracking",
+        "greedy", "divide and conquer", "sorting", "searching",
+        # Web development / frameworks
+        "react", "angular", "vue", "svelte", "next.js", "nuxt",
+        "useeffect", "usestate", "usememo", "usecallback", "useref",
+        "hook", "hooks", "component", "render", "re-render",
+        "dependency array", "context provider", "context api",
+        "state management", "redux", "zustand", "mobx",
+        "virtual dom", "dom", "jsx", "tsx", "props", "state",
+        "strict mode", "production build", "dev mode",
+        "webpack", "vite", "babel", "typescript", "javascript",
+        "node.js", "express", "fastapi", "django", "flask",
+        "async", "await", "promise", "callback", "event loop",
+        # Debugging / runtime concepts
+        "infinite loop", "memory leak", "stack overflow", "segfault",
+        "null pointer", "undefined", "nan", "type error",
+        "runtime error", "compile error", "syntax error",
+        "breakpoint", "stack trace", "profiler", "debugger",
+        "batch", "batched", "concurrent", "concurrency",
     ],
     "medicine": [
         "diagnosis", "symptom", "pathology", "pharmacology", "dosage",
@@ -115,6 +138,11 @@ DOMAIN_VOCAB: Dict[str, List[str]] = {
         "probability", "statistics", "bayesian", "stochastic",
         "graph theory", "combinatorics", "number theory",
         "polynomial", "fourier", "laplace", "markov",
+        # Common math task terms
+        "equation", "solve", "quadratic", "coefficient", "variable",
+        "factor", "factoring", "root", "solution", "inequality",
+        "prime", "prime number", "divisible", "remainder", "modulo",
+        "trigonometry", "logarithm", "exponent", "function",
     ],
 }
 
@@ -125,6 +153,24 @@ CODE_KEYWORDS = {
     "except ", "raise ", "throw ", "async ", "await ", "yield ",
     "public ", "private ", "static ", "void ", "int ", "string ",
     "print(", "console.log", "fmt.println", "system.out",
+    # Implementation / algorithm keywords (from cognitive.py)
+    "implement", "write a function", "write a program", "function that",
+    "recursive", "recursion", "dynamic programming", "dp", "algorithm",
+    "debug", "fix this", "binary search", "sorting", "linked list",
+    "stack", "queue", "tree", "graph", "hash",
+    "red-black", "insertion", "deletion", "balancing",
+    "in c++", "in rust", "in java", "in python", "in javascript",
+    # Web development / framework-specific debugging
+    "useeffect", "usestate", "usememo", "usecallback", "useref",
+    "re-render", "render loop", "dependency array", "context provider",
+    "component", "hook", "hooks", "middleware", "endpoint",
+    "production build", "dev mode", "strict mode",
+    "webpack", "vite", "babel", "npm", "yarn",
+    "infinite loop", "memory leak", "stack overflow",
+    "react", "angular", "vue", "svelte",
+    # Common code-related verbs
+    "refactor", "optimize", "deploy", "compile", "build",
+    "write code", "code that", "program that",
 }
 
 CODE_BLOCK_RE    = re.compile(r"```[\s\S]*?```", re.MULTILINE)
@@ -211,9 +257,145 @@ DEBUG_MARKERS = ["fix", "bug", "error", "debug", "not working", "issue", "crash"
 # ── Math task markers ───────────────────────────────────────────────────────
 MATH_TASK_MARKERS = ["calculate", "solve", "equation", "formula", "integral", "derivative", "proof"]
 
+# ── Filler/Padding Detection ────────────────────────────────────────────────
+# Verbs that indicate an actionable instruction (imperative mood)
+IMPERATIVE_VERBS = {
+    "explain", "describe", "write", "create", "build", "make", "give",
+    "tell", "show", "help", "find", "solve", "calculate", "implement",
+    "design", "analyze", "analyse", "compare", "list", "define", "code",
+    "fix", "debug", "optimize", "optimise", "generate", "summarize",
+    "summarise", "translate", "convert", "compute", "prove", "derive",
+    "refactor", "deploy", "develop", "outline", "evaluate", "assess",
+    "suggest", "recommend", "provide", "draw", "plot", "diagram",
+    "modify", "update", "change", "add", "remove", "delete", "insert",
+}
+
+# Phrase prefixes that signal an actionable request
+ACTIONABLE_PREFIXES = [
+    "give me", "can you", "could you", "would you", "please",
+    "i need", "i want", "i'd like", "how do i", "how can i",
+    "how to", "what is", "what are", "what's", "who is", "who are",
+    "where is", "where are", "when is", "when did",
+    "is it", "is there", "are there", "do you", "does it",
+]
+
+# Context-reference markers: if the actionable sentence references "the above",
+# "the following", etc., the surrounding text is likely relevant context, not filler.
+CONTEXT_REFERENCE_MARKERS = [
+    "the above", "the following", "the below", "this text",
+    "this passage", "this paragraph", "this code", "this error",
+    "this snippet", "the given", "given the", "based on the",
+    "from the", "in the above", "mentioned above", "shown above",
+    "provided above", "attached", "here is", "here are",
+    "the preceding", "the previous",
+]
+
+
+def _is_actionable_sentence(sentence: str) -> bool:
+    """
+    Check if a sentence contains a question or direct instruction.
+    Returns True for questions and imperative statements.
+    """
+    s = sentence.strip()
+    if not s:
+        return False
+
+    lower = s.lower()
+    words = lower.split()
+    if not words:
+        return False
+
+    # Questions (ends with ?)
+    if s.rstrip().endswith("?"):
+        return True
+
+    # Starts with an imperative verb
+    first_word = words[0].rstrip(".,;:!?")
+    if first_word in IMPERATIVE_VERBS:
+        return True
+
+    # Starts with an actionable prefix
+    if any(lower.startswith(p) for p in ACTIONABLE_PREFIXES):
+        return True
+
+    return False
+
+
+def _has_context_references(actionable_text: str) -> bool:
+    """
+    Check if actionable sentences reference surrounding text
+    (e.g., "summarize the above", "given the following code").
+    If so, the surrounding text is essential context, not filler.
+    """
+    lower = actionable_text.lower()
+    return any(marker in lower for marker in CONTEXT_REFERENCE_MARKERS)
+
+
+def detect_filler(prompt: str) -> dict:
+    """
+    Analyse a prompt for filler/padding content.
+    
+    Returns a dict with:
+      - filler_ratio: float (0.0–1.0), proportion of non-actionable sentences
+      - actionable_sentence_count: int
+      - total_sentence_count: int
+      - is_filler_padded: bool
+      - actionable_text: str (just the actionable sentences joined)
+    """
+    # Split into sentences (on period, exclamation, question mark)
+    sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', prompt.strip()) if s.strip()]
+    
+    # Also handle sentences that might not end with punctuation
+    if not sentences:
+        sentences = [prompt.strip()]
+    
+    total = len(sentences)
+    if total <= 1:
+        # Single sentence — no filler detection needed
+        return {
+            "filler_ratio": 0.0,
+            "actionable_sentence_count": 1,
+            "total_sentence_count": 1,
+            "is_filler_padded": False,
+            "actionable_text": prompt.strip(),
+        }
+    
+    actionable = []
+    passive = []
+    
+    for sent in sentences:
+        if _is_actionable_sentence(sent):
+            actionable.append(sent)
+        else:
+            passive.append(sent)
+    
+    actionable_count = len(actionable)
+    filler_ratio = len(passive) / total if total > 0 else 0.0
+    
+    # Build the actionable-only text
+    actionable_text = " ".join(actionable) if actionable else prompt.strip()
+    
+    # Determine if this is genuinely filler-padded:
+    # - High filler ratio (>= 0.70 — most sentences are passive)
+    # - At least 3 total sentences (short prompts aren't "padded")
+    # - The actionable sentences don't reference the surrounding text as context
+    is_padded = (
+        filler_ratio >= 0.70
+        and total >= 3
+        and actionable_count >= 1
+        and not _has_context_references(actionable_text)
+    )
+    
+    return {
+        "filler_ratio": round(filler_ratio, 3),
+        "actionable_sentence_count": actionable_count,
+        "total_sentence_count": total,
+        "is_filler_padded": is_padded,
+        "actionable_text": actionable_text,
+    }
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  FEATURE NAMES (in canonical order — 42 features)
+#  FEATURE NAMES (in canonical order — 45 features)
 # ════════════════════════════════════════════════════════════════════════════════
 
 FEATURE_NAMES: List[str] = [
@@ -274,7 +456,136 @@ FEATURE_NAMES: List[str] = [
     # ── Aggregate (2) ──
     "total_signal_count",
     "estimated_output_complexity",
+
+    # ── Filler Detection (3) ──
+    "filler_ratio",
+    "actionable_sentence_count",
+    "is_filler_padded",
 ]
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+#  VOCABULARY NORMALIZATION (deflate ornamental synonyms before scoring)
+# ════════════════════════════════════════════════════════════════════════════════
+
+# Maps pretentious/academic synonyms to their plain equivalents.
+# Applied to lowercased text BEFORE keyword matching so that fancy vocabulary
+# for simple concepts doesn't inflate complexity scores.
+VOCABULARY_DEFLATION: Dict[str, str] = {
+    # Verbs — fancy → plain
+    "elucidate": "explain",
+    "explicate": "explain",
+    "expound": "explain",
+    "delineate": "describe",
+    "articulate": "explain",
+    "illuminate": "explain",
+    "clarify": "explain",
+    "enumerate": "list",
+    "ascertain": "find out",
+    "discern": "identify",
+    "deliberate": "think about",
+    "pontificate": "talk about",
+    "ruminate": "think about",
+    "contemplate": "think about",
+    "cogitate": "think about",
+    "endeavor": "try",
+    "endeavour": "try",
+    "utilize": "use",
+    "utilise": "use",
+    "facilitate": "help",
+    "ameliorate": "improve",
+    "commence": "start",
+    "terminate": "end",
+    "procure": "get",
+    "disseminate": "share",
+    "promulgate": "announce",
+    "inaugurate": "start",
+    "effectuate": "do",
+    "peruse": "read",
+    # Nouns — fancy → plain
+    "paradigm": "concept",
+    "methodology": "method",
+    "framework": "approach",
+    "modality": "way",
+    "nomenclature": "naming",
+    "vernacular": "language",
+    "lexicon": "vocabulary",
+    "discourse": "discussion",
+    "juxtaposition": "comparison",
+    "dichotomy": "contrast",
+    "conundrum": "problem",
+    "quandary": "problem",
+    "predicament": "problem",
+    "ramification": "consequence",
+    "manifestation": "form",
+    "instantiation": "example",
+    "proclivity": "tendency",
+    "propensity": "tendency",
+    "predilection": "preference",
+    # Adjectives — fancy → plain
+    "quintessential": "essential",
+    "fundamental": "basic",
+    "paramount": "important",
+    "indispensable": "essential",
+    "ubiquitous": "common",
+    "multifaceted": "complex",
+    "comprehensive": "complete",
+    "intrinsic": "basic",
+    "extraneous": "extra",
+    "superfluous": "extra",
+    "succinct": "short",
+    "concise": "short",
+    "verbose": "wordy",
+    "efficacious": "effective",
+    "perspicacious": "sharp",
+    "sagacious": "wise",
+    "magnanimous": "generous",
+    "ostentatious": "showy",
+    "surreptitious": "secret",
+    "perfunctory": "careless",
+    "meticulous": "careful",
+    # Adverbs / phrases
+    "in a succinct manner": "briefly",
+    "in a comprehensive manner": "fully",
+    "in a meticulous manner": "carefully",
+    "in an expeditious manner": "quickly",
+    "in a manner": "",
+    "with respect to": "about",
+    "pertaining to": "about",
+    "in regard to": "about",
+    "in regards to": "about",
+    "with regard to": "about",
+    "vis-à-vis": "about",
+    "vis-a-vis": "about",
+    "apropos of": "about",
+    "in the context of": "about",
+    "in lieu of": "instead of",
+    "notwithstanding": "despite",
+    "henceforth": "from now on",
+    "heretofore": "before",
+    "aforementioned": "previous",
+    "subsequently": "then",
+    "consequently": "so",
+    "furthermore": "also",
+    "moreover": "also",
+    "nevertheless": "but",
+    "nonetheless": "but",
+}
+
+# Sort by descending length so longer phrases are matched first
+_DEFLATION_PAIRS = sorted(VOCABULARY_DEFLATION.items(), key=lambda x: len(x[0]), reverse=True)
+
+
+def _normalize_vocabulary(lower_text: str) -> str:
+    """
+    Replace ornamental/pretentious words with plain equivalents.
+    Operates on already-lowercased text. Returns normalized text.
+    """
+    result = lower_text
+    for fancy, plain in _DEFLATION_PAIRS:
+        if fancy in result:
+            result = result.replace(fancy, plain)
+    return result
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -295,6 +606,11 @@ class FeatureExtractor:
         """Extract all 42 features from a prompt. Returns named feature dict."""
         text = prompt.strip()
         lower = text.lower()
+
+        # Normalize vocabulary: deflate ornamental synonyms so fancy-but-simple
+        # prompts don't trigger false complexity signals
+        lower = _normalize_vocabulary(lower)
+
         words = text.split()
         sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
 

@@ -248,3 +248,38 @@ h1, h2, h3, h4, h5, h6 {
   }
   html { scroll-behavior: auto; }
 }
+
+/* Markdown Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+th, td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background-color: var(--bg-surface-high);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:nth-child(even) {
+  background-color: var(--bg-surface-low);
+}
+
+tr:hover {
+  background-color: var(--bg-surface-highest);
+}

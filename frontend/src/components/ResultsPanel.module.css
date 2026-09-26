@@ -147,30 +147,192 @@
   background: rgba(132, 147, 150, 0.15);
 }
 
-.responseBody :global(.resp-heading) {
-  display: block;
-  margin: 28px 0 10px;
+/* ── Markdown Content Styles ───────────────────────────────────────────────── */
+
+.markdownContent {
   color: var(--text-primary);
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.75;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-.responseBody :global(.resp-code) {
+/* Headings */
+.markdownContent h1,
+.markdownContent h2,
+.markdownContent h3,
+.markdownContent h4,
+.markdownContent h5,
+.markdownContent h6 {
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin: 24px 0 10px;
+  line-height: 1.3;
+}
+
+.markdownContent h1 { font-size: 20px; letter-spacing: 0.02em; }
+.markdownContent h2 { font-size: 17px; letter-spacing: 0.03em; }
+.markdownContent h3 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.markdownContent h4 { font-size: 14px; color: var(--text-secondary); }
+.markdownContent h5,
+.markdownContent h6 { font-size: 13px; color: var(--text-dim); }
+
+/* Paragraphs */
+.markdownContent p {
+  margin: 10px 0;
+}
+
+/* Bold / Italic */
+.markdownContent strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.markdownContent em {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* Inline code */
+.markdownContent code {
   padding: 2px 7px;
-  border-radius: 0;
+  border-radius: 4px;
   background: var(--bg-surface-high);
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 13px;
+  border: 1px solid rgba(132, 147, 150, 0.08);
 }
 
-.responseBody :global(.resp-bullet) {
-  display: block;
-  padding-left: 16px;
-  position: relative;
+/* Code blocks */
+.markdownContent pre {
+  margin: 16px 0;
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(132, 147, 150, 0.1);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(132, 147, 150, 0.15) transparent;
+}
+
+.markdownContent pre code {
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+/* Lists */
+.markdownContent ul,
+.markdownContent ol {
+  margin: 10px 0;
+  padding-left: 24px;
+}
+
+.markdownContent li {
   margin: 4px 0;
+  line-height: 1.7;
+}
+
+.markdownContent li::marker {
+  color: var(--accent);
+}
+
+.markdownContent ul ul,
+.markdownContent ol ol,
+.markdownContent ul ol,
+.markdownContent ol ul {
+  margin: 4px 0;
+}
+
+/* Tables */
+.markdownContent table {
+  width: 100%;
+  margin: 16px 0;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: 1px solid rgba(132, 147, 150, 0.12);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.markdownContent thead {
+  background: rgba(132, 147, 150, 0.06);
+}
+
+.markdownContent th {
+  padding: 10px 14px;
+  text-align: left;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  border-bottom: 1px solid rgba(132, 147, 150, 0.12);
+}
+
+.markdownContent td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(132, 147, 150, 0.06);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.markdownContent tr:last-child td {
+  border-bottom: none;
+}
+
+.markdownContent tr:hover td {
+  background: rgba(132, 147, 150, 0.03);
+}
+
+/* Blockquotes */
+.markdownContent blockquote {
+  margin: 16px 0;
+  padding: 12px 20px;
+  border-left: 3px solid var(--accent);
+  background: rgba(132, 147, 150, 0.03);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.markdownContent blockquote p {
+  margin: 4px 0;
+}
+
+/* Horizontal rules */
+.markdownContent hr {
+  margin: 24px 0;
+  border: none;
+  height: 1px;
+  background: rgba(132, 147, 150, 0.1);
+}
+
+/* Links */
+.markdownContent a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 150ms ease;
+}
+
+.markdownContent a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* Images */
+.markdownContent img {
+  max-width: 100%;
+  border-radius: var(--radius-lg);
+  margin: 12px 0;
 }
 
 .statList {

@@ -1,5 +1,9 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState, useRef, useMemo } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import {
   ArrowRight,
   Brain,
@@ -9,34 +13,12 @@ import {
 } from '@phosphor-icons/react'
 import styles from './ResultsPanel.module.css'
 
-/**
- * Convert markdown-formatted LLM output to clean rendered HTML.
- * Handles: **bold**, *italic*, `code`, ### headers, - lists, numbered lists.
- */
-function formatResponse(text) {
-  if (!text) return ''
-
-  return text
-    // Convert ### headers to styled lines
-    .replace(/^#{1,3}\s+(.+)$/gm, '<strong class="resp-heading">$1</strong>')
-    // Convert **bold** to <strong>
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Convert *italic* to <em>  (but not inside already-handled **)
-    .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>')
-    // Convert `inline code` to <code>
-    .replace(/`([^`]+)`/g, '<code class="resp-code">$1</code>')
-    // Convert bullet lists (- item)
-    .replace(/^[\-\*]\s+(.+)$/gm, '<span class="resp-bullet">• $1</span>')
-    // Convert numbered lists (1. item)
-    .replace(/^\d+\.\s+(.+)$/gm, '<span class="resp-bullet">$1</span>')
-}
-
 function normalizeRoutingReason(reason = '') {
   return reason
     .replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
-    .replace(/â†’/g, '→')
-    .replace(/â†‘/g, '↑')
-    .replace(/â†“/g, '↓')
+    .replace(/â†'/g, '→')
+    .replace(/â†'/g, '↑')
+    .replace(/â†"/g, '↓')
     .replace(/Â·/g, '·')
     .replace(/\s+/g, ' ')
     .trim()
@@ -49,13 +31,24 @@ function parseMetric(value = '') {
 }
 
 const MODEL_MAP = {
+  'Gemma 4 26B (a4b)': 'Edge Neural Unit',
+  'Gemma 4 26B (OpenRouter)': 'Edge Fallback Unit',
+  'Gemini 3.5 Flash Lite': 'Logical Flash Core',
+  'Google Gemma 2 9B (Free)': 'Logical Fallback Core',
+  'Llama 3.1 8B (OpenRouter)': 'Logical Fallback Core',
+  'DeepSeek V4.1 Flash': 'Multimodal Flash Engine',
   'Nemotron Mini 4B': 'Edge Processing Unit',
   'Gemma 3n E4B': 'Edge Fallback Unit',
   'Nemotron Nano 9B v2': 'Logical Reasoning Core',
   'Nemotron Nano 30B-A3B': 'Core Analytical Unit',
+  'Muse Glimmer 30B': 'Core Analytical Unit',
+  'Nemotron 3.5 Lightning 30B': 'Analytical Fallback Core',
   'Nemotron 3 Super 120B': 'Deep Reasoning Engine',
+  'GLM 5.3 Flash': 'Flash Reasoning Engine',
   'Mistral Medium 3.5': 'Reasoning Fallback Engine',
   'Qwen3 Coder 480B': 'Frontier Code Nexus',
+  'Kimi K3': 'Frontier Multimodal Nexus',
+  'Nemotron 3 Ultra 550B': 'Frontier Ultra Engine',
   'Qwen3.5 397B': 'Frontier Fallback Nexus'
 }
 
@@ -227,55 +220,64 @@ const TIER_MAP = {
   'Tier 4': 'Tier 4'
 }
 
-// ── Typewriter Text Component ────────────────────────────────────────────────
-function TypewriterText({ text, isStreaming }) {
-  const [revealedCount, setRevealedCount] = useState(0)
+// ── Markdown Response Component ─────────────────────────────────────────────
+// Renders LLM output with full markdown: tables, code blocks, headers, lists, etc.
+function MarkdownResponse({ text, isStreaming }) {
   const containerRef = useRef(null)
-  const prevTextRef = useRef('')
+  const [displayText, setDisplayText] = useState('')
+  const [isRevealing, setIsRevealing] = useState(true)
+  const revealIntervalRef = useRef(null)
+  const lastTextRef = useRef('')
 
-  // Split text into words (preserving whitespace structure)
-  const words = useMemo(() => {
-    if (!text) return []
-    return text.split(/( +)/)
+  useEffect(() => {
+    if (!text) {
+      setDisplayText('')
+      setIsRevealing(true)
+      return
+    }
+
+    // If text changed (new response or streaming chunk)
+    if (text !== lastTextRef.current) {
+      const prevLen = lastTextRef.current.length
+      lastTextRef.current = text
+
+      // If entirely new text (not a streaming append), reveal progressively
+      if (prevLen === 0 && text.length > 0) {
+        setIsRevealing(true)
+        let charIdx = 0
+        const totalChars = text.length
+        // Reveal ~80 chars per tick at 16ms = ~5000 chars/sec
+        const charsPerTick = Math.max(20, Math.ceil(totalChars / 60))
+
+        if (revealIntervalRef.current) cancelAnimationFrame(revealIntervalRef.current)
+
+        const reveal = () => {
+          charIdx = Math.min(charIdx + charsPerTick, totalChars)
+          setDisplayText(text.slice(0, charIdx))
+          if (charIdx < totalChars) {
+            revealIntervalRef.current = requestAnimationFrame(reveal)
+          } else {
+            setIsRevealing(false)
+          }
+        }
+        revealIntervalRef.current = requestAnimationFrame(reveal)
+      } else {
+        // Streaming append — just show the latest text
+        setDisplayText(text)
+      }
+    }
+
+    return () => {
+      if (revealIntervalRef.current) cancelAnimationFrame(revealIntervalRef.current)
+    }
   }, [text])
 
+  // Auto-scroll during streaming/revealing
   useEffect(() => {
-    // When new text arrives (streaming), animate the new words
-    if (text !== prevTextRef.current) {
-      const prevWords = prevTextRef.current ? prevTextRef.current.split(/( +)/) : []
-      const newWordCount = words.length
-      
-      // If text grew, reveal new words progressively
-      if (newWordCount > prevWords.length) {
-        const startFrom = revealedCount
-        const wordsToReveal = newWordCount - startFrom
-        
-        if (wordsToReveal > 0) {
-          let current = startFrom
-          const revealBatch = () => {
-            // Reveal 3-5 words per tick for smooth but fast animation
-            current = Math.min(current + 4, newWordCount)
-            setRevealedCount(current)
-            if (current < newWordCount) {
-              requestAnimationFrame(revealBatch)
-            }
-          }
-          requestAnimationFrame(revealBatch)
-        }
-      } else {
-        // Text was replaced entirely (e.g. history select)
-        setRevealedCount(newWordCount)
-      }
-      prevTextRef.current = text
-    }
-  }, [text, words.length])
-
-  // Auto-scroll to bottom as text reveals
-  useEffect(() => {
-    if (containerRef.current && isStreaming) {
+    if (containerRef.current && (isStreaming || isRevealing)) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
-  }, [revealedCount, isStreaming])
+  }, [displayText, isStreaming, isRevealing])
 
   if (!text) {
     return (
@@ -289,23 +291,14 @@ function TypewriterText({ text, isStreaming }) {
 
   return (
     <div className={styles.responseBody} ref={containerRef}>
-      {words.map((word, i) => {
-        const isRevealed = i < revealedCount
-        // Check if this is a newline break
-        if (word === '') return null
-        if (word.trim() === '') return <span key={i}>{word}</span>
-        
-        return (
-          <span
-            key={i}
-            className={`${styles.typewriterWord} ${isRevealed ? styles.wordRevealed : styles.wordHidden}`}
-            style={{
-              transitionDelay: `${Math.max(0, (i - (revealedCount - 8)) * 12)}ms`,
-            }}
-            dangerouslySetInnerHTML={{ __html: formatResponse(word) }}
-          />
-        )
-      })}
+      <div className={styles.markdownContent}>
+        <ReactMarkdown 
+          remarkPlugins={[remarkGfm, remarkMath]}
+          rehypePlugins={[rehypeKatex]}
+        >
+          {displayText}
+        </ReactMarkdown>
+      </div>
       {isStreaming && (
         <span className={styles.cursorBlink}>▊</span>
       )}
@@ -361,7 +354,7 @@ export default function ResultsPanel({ query, result, onClear }) {
               <div className={styles.cardTitle}>Generated Output</div>
               <div className={styles.badge}>{model_used}</div>
             </div>
-            <TypewriterText text={response} isStreaming={isStreaming} />
+            <MarkdownResponse text={response} isStreaming={isStreaming} />
           </div>
         </div>
 
@@ -397,7 +390,7 @@ export default function ResultsPanel({ query, result, onClear }) {
           <div className={styles.metaCard}>
             <div className={styles.cardTitle}>Cognitive Profile</div>
             <div className={styles.barsGrid}>
-              {Object.entries(cognitive_profile)
+              {Object.entries(cognitive_profile || {})
                 .filter(([k]) => !['task_type', 'signals', 'confidence', 'scorer_used', 'complexity_breakdown', 'cora_score'].includes(k))
                 .map(([key, val]) => (
                 <div key={key} className={styles.barWrap}>
@@ -416,9 +409,9 @@ export default function ResultsPanel({ query, result, onClear }) {
               ))}
             </div>
             {/* Signals */}
-            {cognitive_profile.signals && cognitive_profile.signals.length > 0 && (
+            {(cognitive_profile || {}).signals && (cognitive_profile || {}).signals.length > 0 && (
               <div className={styles.signals}>
-                {cognitive_profile.signals.map((sig, i) => (
+                {(cognitive_profile || {}).signals.map((sig, i) => (
                   <span key={i} className={styles.signalBadge}>{sig}</span>
                 ))}
               </div>

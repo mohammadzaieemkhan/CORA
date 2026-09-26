@@ -438,8 +438,12 @@ async def optimize_prompt_endpoint(
         )
         
     except Exception as e:
-        logger.error(f"Optimization error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        err_msg = str(e)
+        logger.error(f"Optimization error: {err_msg}")
+        # Return appropriate HTTP status for timeout vs other errors
+        if "timed out" in err_msg.lower() or "timeout" in err_msg.lower():
+            raise HTTPException(status_code=504, detail=err_msg)
+        raise HTTPException(status_code=502, detail=err_msg)
 
 
 @app.post("/v1/query", response_model=QueryResponse)
@@ -564,11 +568,10 @@ async def handle_query_stream(
         full_response = ""
         try:
             from llm_providers import TIER_MODEL_MAP, _build_fallback_chain, TIER_FALLBACKS
-            from llm_providers import nemotron_mini_4b
 
             primary = TIER_MODEL_MAP.get(tier)
             if not primary:
-                primary = nemotron_mini_4b
+                primary = list(TIER_MODEL_MAP.values())[0]
 
             key = user_key or primary.get_api_key()
             if not key:

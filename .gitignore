@@ -71,3 +71,4 @@ index.html
 *.safetensors
 *.bin
 model_cache/
+.vercel

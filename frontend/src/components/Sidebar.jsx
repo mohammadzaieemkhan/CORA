@@ -17,13 +17,24 @@ const TIER_MAP = {
 }
 
 const MODEL_MAP = {
+  'Gemma 4 26B (a4b)': 'Edge',
+  'Gemma 4 26B (OpenRouter)': 'Edge',
+  'Gemini 3.5 Flash Lite': 'Logical',
+  'Google Gemma 2 9B (Free)': 'Logical',
+  'Llama 3.1 8B (OpenRouter)': 'Logical',
+  'DeepSeek V4.1 Flash': 'Reasoning',
   'Nemotron Mini 4B': 'Edge',
   'Gemma 3n E4B': 'Edge',
   'Nemotron Nano 9B v2': 'Logical',
   'Nemotron Nano 30B-A3B': 'Analytical',
+  'Muse Glimmer 30B': 'Analytical',
+  'Nemotron 3.5 Lightning 30B': 'Analytical',
   'Nemotron 3 Super 120B': 'Reasoning',
+  'GLM 5.3 Flash': 'Reasoning',
   'Mistral Medium 3.5': 'Reasoning',
   'Qwen3 Coder 480B': 'Deep',
+  'Kimi K3': 'Deep',
+  'Nemotron 3 Ultra 550B': 'Deep',
   'Qwen3.5 397B': 'Deep'
 }
 

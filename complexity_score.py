@@ -18,11 +18,11 @@ W_I = {
 
 # ── Scaling exponents ─────────────────────────────────────────────────────────
 ALPHA_I = {
-    "reasoning":   2.21,   # updated via ordinal regression (was 1.50)
-    "domain":      1.40,   # within 15% divergence — kept at 1.40
-    "creativity":  0.06,   # updated via ordinal regression (was 0.80)
-    "constraints": 0.07,   # updated via ordinal regression (was 1.10)
-    "contextual":  4.51,   # updated via ordinal regression (was 1.10)
+    "reasoning":   2.00,   # balanced: was 2.21 (too high) then 1.80 (too low)
+    "domain":      1.40,   # stable — kept at 1.40
+    "creativity":  0.50,   # restored from 0.06
+    "constraints": 0.60,   # restored from 0.07
+    "contextual":  2.40,   # balanced: was 4.51 (extreme) then 1.80 (too low)
     "fewshots":    0.80,
 }
 
@@ -36,7 +36,7 @@ TAU = {
     TaskType.MULTI_STEP:     1.05,   # was 1.00
     TaskType.FACTUAL:        1.00,
     TaskType.CREATIVE:       0.90,
-    TaskType.CONVERSATIONAL: 0.95,   # lowered from 1.10 — reduces over-routing of simple chats
+    TaskType.CONVERSATIONAL: 0.90,   # lowered from 1.10 — reduces simple chat over-routing
 }
 
 Z = 1.045
@@ -119,6 +119,15 @@ def score_to_tier(profile: CognitiveProfile, prompt: str) -> Tuple[str, float, i
     score = cora_complexity_score(profile, prompt)
     word_count = len(prompt.split())
 
+    # ── Verbosity penalty ─────────────────────────────────────────────
+    # Wordy prompts with very few actual complexity signals are likely
+    # "fancy vocabulary for simple questions" — damp their score.
+    if word_count >= 8:
+        total_signals = len(getattr(profile, 'signals', []))
+        signal_density = total_signals / word_count if word_count > 0 else 0
+        if signal_density < 0.03 and score > 0:
+            score *= 0.70  # 30% penalty for wordy-but-empty prompts
+
     # ── Prompt-length complexity boost ─────────────────────────────────
     if score > 0 and word_count >= 20:
         score += 0.04
@@ -127,14 +136,40 @@ def score_to_tier(profile: CognitiveProfile, prompt: str) -> Tuple[str, float, i
     if score == 0.0 and word_count >= 6:
         score = 0.18
 
-    # ── Tier thresholds ───────────────────────────────────────────────
-    THRESHOLDS = [0.20, 0.50, 0.90, 1.55]
+    # ── Trivial prompt override ───────────────────────────────────────
+    # Extremely short prompts (< 4 words) with no math/code syntax
+    # should be handled by Tier 0 regardless of ML scorer overconfidence
+    if word_count < 4 and not re.search(r"[\d\{\}\[\]\(\)\+\-\*\/\=\>\<\_\\]", prompt):
+        score = min(score, 0.30)
+
+    # ── Short prompt dampening & capping ───────────────────────────────
+    # Extremely short prompts (< 15 words) cannot contain highly complex
+    # multi-step reasoning or architecture, so cap/damp their scores unless they are explicit code/debugging tasks.
+    if word_count < 15 and score > 0:
+        is_technical = profile.task_type in (TaskType.CODE, TaskType.DEBUGGING)
+        if not is_technical:
+            # Dampen non-technical short queries
+            scale = 0.40 + (word_count / 25.0)  # e.g., 10 words -> 0.80, 5 words -> 0.60
+            score *= min(1.0, scale)
+            # Cap non-technical short queries to Tier 1 maximum (0.69)
+            score = min(score, 0.69)
+        else:
+            # Soft cap for short technical/code/debugging queries to Tier 2 (1.10)
+            score = min(score, 1.10)
+
+    # ── Tier thresholds (calibrated for NeMo 0-100 scores with cap=20) ──
+    # Tier 0: score < 0.35
+    # Tier 1: 0.35 ≤ s < 0.70
+    # Tier 2: 0.70 ≤ s < 1.15
+    # Tier 3: 1.15 ≤ s < 1.50
+    # Tier 4: score ≥ 1.50
+    THRESHOLDS = [0.35, 0.70, 1.15, 1.50]
     tier_idx = sum(1 for t in THRESHOLDS if score >= t)
     tier_idx = max(0, min(4, tier_idx))
     tier_label = f"Tier {tier_idx}"
 
     # ── Confidence Calibration ────────────────────────────────────────
-    # Normalise 0-2 score to a 0-1 confidence-like difficulty score
+    # Normalise score to a 0-1 confidence-like difficulty score
     # then apply temperature scaling to fix overconfidence.
     norm_diff = min(score / 2.0, 1.0)
     calibrated_diff = calibrate_confidence(norm_diff, tier_label)

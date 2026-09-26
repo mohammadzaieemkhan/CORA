@@ -1,94 +1,100 @@
 """
 llm_providers.prompt_optimizer
 ──────────────────────────────
-Dedicated model for Prompt Optimization: Nemotron Nano 30B-A3B
-Provider : NVIDIA Integrate API
+Dedicated model for Prompt Optimization: Google Gemini Top-Tier
+Provider : Google AI Studio
 
-Uses Nemotron Nano 30B-A3B as the optimizer engine — strong reasoning
-capabilities with thinking enabled for high-quality prompt compression.
-
-OPTIMISED: Persistent client, reduced max_tokens, tighter timeout.
+Uses Google's top-tier Gemini model (gemini-3.8-flash with fallback to
+gemini-3.5-flash-lite) to compress and optimize raw user prompts for
+maximum token efficiency and execution clarity.
 """
 
 from __future__ import annotations
 
 import os
 import logging
-from openai import AsyncOpenAI
+from typing import Optional
+
+from .base import call_gemini_rest
 
 logger = logging.getLogger("cora.llm.optimizer")
 
-MODEL_ID = "nvidia/nemotron-3-nano-30b-a3b"
-API_KEY_ENV = "NVIDIA_PROMPT_OPTIMIZER_API_KEY"
-NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-
-# ── Persistent client ────────────────────────────────────────────────────────
-_client: AsyncOpenAI | None = None
+PRIMARY_MODEL_ID = "gemini-3.8-flash"
+FALLBACK_MODEL_ID = "gemini-3.5-flash-lite"
+MODEL_ID = PRIMARY_MODEL_ID
+DISPLAY_NAME = "Google Gemini 3.8 Flash (Optimizer)"
+API_KEY_ENV = "GOOGLE_AI_STUDIO_API_KEY"
 
 
 def get_api_key() -> str:
-    return os.getenv(API_KEY_ENV, "").strip()
+    """Retrieve the Google AI Studio API key."""
+    return (
+        os.getenv(API_KEY_ENV, "").strip()
+        or os.getenv("GOOGLE_API_KEY", "").strip()
+    )
 
 
-def _get_client(key: str) -> AsyncOpenAI:
-    """Return a persistent AsyncOpenAI client for the optimizer."""
-    global _client
-    if _client is None:
-        _client = AsyncOpenAI(
-            base_url=NVIDIA_BASE_URL,
-            api_key=key,
-            timeout=60.0,
-            max_retries=0,
-        )
-    return _client
-
-
-async def optimize_prompt(prompt: str, api_key: str | None = None) -> str:
-    """Use Nemotron Nano 30B-A3B to automatically restructure a prompt for maximum clarity."""
+async def optimize_prompt(prompt: str, api_key: Optional[str] = None) -> str:
+    """
+    Use Google Gemini to automatically restructure and compress a prompt for maximum clarity.
+    Extracts the core actionable intent while discarding rambling filler and context.
+    """
     key = api_key or get_api_key()
     if not key:
         raise Exception(f"No API key configured for Prompt Optimizer ({API_KEY_ENV})")
-        
+
     system_instruction = (
-        "You are an expert prompt compiler. The user is submitting a prompt to an AI logic router. "
+        "You are an expert prompt compiler and optimizer. The user is submitting a prompt to an AI logic router.\n"
         "Your task is strictly to COMPRESS and OPTIMIZE their raw prompt for maximum token efficiency and clarity.\n"
         "RULES:\n"
         "1. Extract ONLY the core actionable intent or question.\n"
         "2. If a large portion of the prompt is irrelevant rambling, preamble, or context that does not affect the final question, COMPLETELY DISCARD IT.\n"
         "3. DO NOT add any new logic, constraints, features, or 'technical requirements' that the user did not explicitly state.\n"
         "4. Use concise, direct language. Remove all conversational filler.\n"
-        "5. DO NOT ANSWER THEIR QUESTION. Return strictly the optimized, compressed prompt text ready for execution.\n\n"
-        f"RAW PROMPT TO OPTIMIZE:\n{prompt}"
-    )
-    
-    client = _get_client(key)
-    
-    full_content = ""
-
-    completion = await client.chat.completions.create(
-        model=MODEL_ID,
-        messages=[{"role": "user", "content": system_instruction}],
-        temperature=1.0,
-        top_p=1.0,
-        max_tokens=16384,
-        stream=True,
-        extra_body={
-            "reasoning_budget": 16384,
-            "chat_template_kwargs": {"enable_thinking": True},
-        },
+        "5. DO NOT ANSWER THEIR QUESTION. Return strictly the optimized, compressed prompt text ready for execution."
     )
 
-    async for chunk in completion:
-        if not getattr(chunk, "choices", None):
-            continue
-            
-        delta = chunk.choices[0].delta
-        
-        # Check for reasoning_content just in case this model supports it
-        reasoning = getattr(delta, "reasoning_content", None)
-        # We drop reasoning explicitly for optimization since we only want the cleanly formatted prompt
-        
-        if delta.content is not None:
-            full_content += delta.content
+    user_content = f"RAW PROMPT TO OPTIMIZE:\n{prompt}"
 
-    return full_content.strip()
+    # Try Primary Top-Tier Model first
+    try:
+        logger.info(f"Optimizing prompt with Google {PRIMARY_MODEL_ID}...")
+        result = await call_gemini_rest(
+            model=PRIMARY_MODEL_ID,
+            prompt=user_content,
+            system_prompt=system_instruction,
+            api_key=key,
+            temperature=0.2,
+            max_tokens=2048,
+            timeout=15.0,
+        )
+        if result and result.strip():
+            return result.strip()
+    except Exception as e:
+        logger.warning(f"Primary optimizer {PRIMARY_MODEL_ID} failed ({e}), falling back to {FALLBACK_MODEL_ID}...")
+
+    # Fallback to Gemini 3.5 Flash Lite
+    try:
+        logger.info(f"Optimizing prompt with Google {FALLBACK_MODEL_ID}...")
+        result = await call_gemini_rest(
+            model=FALLBACK_MODEL_ID,
+            prompt=user_content,
+            system_prompt=system_instruction,
+            api_key=key,
+            temperature=0.2,
+            max_tokens=2048,
+            timeout=15.0,
+        )
+        if result and result.strip():
+            return result.strip()
+    except Exception as fb_err:
+        logger.error(f"Fallback optimizer {FALLBACK_MODEL_ID} failed: {fb_err}")
+        err_str = str(fb_err).lower()
+        if "timed out" in err_str or "timeout" in err_str:
+            raise Exception(
+                "Prompt optimization timed out — the Google API is busy right now. "
+                "Please try again in a moment, or submit your prompt directly without optimization."
+            ) from fb_err
+        raise
+
+    return prompt.strip()

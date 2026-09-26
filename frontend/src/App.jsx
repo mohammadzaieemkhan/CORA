@@ -98,6 +98,10 @@ function App() {
   const handleHistorySelect = (historyResult) => {
     if (historyResult) {
       setResult(typeof historyResult === 'string' ? JSON.parse(historyResult) : historyResult)
+      setShowDashboard(false)
+      if (contentRef.current) {
+        contentRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+      }
     }
   }
 

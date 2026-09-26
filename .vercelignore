@@ -1,0 +1,36 @@
+# Python backend (not deployed to Vercel)
+.venv/
+__pycache__/
+*.py
+*.pyc
+cognitive_module/
+llm_providers/
+scratch/
+model_cache/
+*.safetensors
+*.bin
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+
+# Data files
+routerbench_samples.json
+alpaca_data.json
+
+# Local configs
+.env
+.env.local
+mcp_config.json
+.agent/
+.gemini/
+
+# Git
+.git/
+
+# Node modules (Vercel installs fresh)
+frontend/node_modules/
+
+# Built assets served by FastAPI locally
+assets/
+index.html
