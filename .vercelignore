@@ -4,7 +4,6 @@
 __pycache__/
 .venv/
 requirements.txt
-main.py
 
 # Heavy directories
 cognitive_module/
@@ -42,7 +41,7 @@ Pipfile.lock
 
 # Node modules (Vercel installs fresh)
 frontend/node_modules/
+frontend/dist/
 
-# Built assets served by FastAPI locally
+# Root-level built assets (served by FastAPI locally, not needed on Vercel)
 assets/
-index.html
