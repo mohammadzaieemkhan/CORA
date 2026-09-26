@@ -1,27 +1,39 @@
-# Python backend (not deployed to Vercel)
-.venv/
-__pycache__/
+# Python backend — NOT deployed to Vercel
 *.py
 *.pyc
+__pycache__/
+.venv/
+requirements.txt
+main.py
+
+# Heavy directories
 cognitive_module/
 llm_providers/
 scratch/
 model_cache/
+
+# Binary / data files
 *.safetensors
 *.bin
 *.csv
 *.db
 *.sqlite
 *.sqlite3
-
-# Data files
+*.docx
 routerbench_samples.json
 alpaca_data.json
 
-# Local configs
+# Config & secrets
 .env
 .env.local
+.env.example
 mcp_config.json
+.python-version
+pyproject.toml
+Pipfile
+Pipfile.lock
+
+# Agent / IDE files
 .agent/
 .gemini/
 
