@@ -1,7 +1,7 @@
 """
 llm_providers.muse_glimmer_30b
 ───────────────────────────────
-Tier 2 — Meta Muse Glimmer 30B
+Tier 2 Fallback — Meta Muse Glimmer 30B
 Mid-range reasoning and analytical model hosted on NVIDIA Integrate API.
 
 Provider : NVIDIA Integrate API (OpenAI-compatible)
@@ -37,9 +37,10 @@ async def call(prompt: str, api_key: str | None = None) -> str:
         model=MODEL_ID,
         prompt=prompt,
         api_key=key,
-        temperature=1.0,
-        top_p=0.95,
-        max_tokens=8192,
+        temperature=0.2,
+        top_p=0.9,
+        max_tokens=2048,
+        timeout=25.0,
         system_prompt=(
             "You are a helpful assistant. Be clear and well-structured. "
             "Provide thorough but concise answers. Avoid unnecessary repetition "

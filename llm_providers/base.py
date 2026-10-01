@@ -95,10 +95,11 @@ async def call_nvidia_openai(
         "model": model,
         "messages": messages,
         "temperature": temperature,
-        "top_p": top_p,
         "max_tokens": max_tokens,
         "stream": False,
     }
+    if top_p is not None:
+        payload["top_p"] = top_p
     if extra_body:
         payload.update(extra_body)
 

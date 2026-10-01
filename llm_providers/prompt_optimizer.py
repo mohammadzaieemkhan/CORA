@@ -19,10 +19,10 @@ from .base import call_gemini_rest
 
 logger = logging.getLogger("cora.llm.optimizer")
 
-PRIMARY_MODEL_ID = "gemini-3.8-flash"
-FALLBACK_MODEL_ID = "gemini-3.5-flash-lite"
+PRIMARY_MODEL_ID = "gemini-3.5-flash-lite"
+FALLBACK_MODEL_ID = "gemini-3.8-flash"
 MODEL_ID = PRIMARY_MODEL_ID
-DISPLAY_NAME = "Google Gemini 3.8 Flash (Optimizer)"
+DISPLAY_NAME = "Google Gemini 3.5 Flash Lite (Optimizer)"
 API_KEY_ENV = "GOOGLE_AI_STUDIO_API_KEY"
 
 

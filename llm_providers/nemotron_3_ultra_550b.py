@@ -37,12 +37,10 @@ async def call(prompt: str, api_key: str | None = None) -> str:
         model=MODEL_ID,
         prompt=prompt,
         api_key=key,
-        temperature=1.0,
+        temperature=0.6,
         top_p=0.95,
-        max_tokens=16384,
-        extra_body={
-            "chat_template_kwargs": {"enable_thinking": True},
-        },
+        max_tokens=4096,
+        timeout=25.0,
         system_prompt=(
             "You are a highly capable assistant for complex reasoning tasks. "
             "Provide comprehensive, well-structured, and accurate answers. "

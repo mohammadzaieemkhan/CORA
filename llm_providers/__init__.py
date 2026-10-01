@@ -8,8 +8,8 @@ Working Model Stack:
   Tier 0 Fallback  →  Gemma 4 26B (OpenRouter)       (google/gemma-4-26b-a4b-it:free)
   Tier 1 Primary   →  Google Gemini 3.5 Flash Lite   (gemini-3.5-flash-lite)
   Tier 1 Fallback  →  Google Gemma 2 9B (OpenRouter) (google/gemma-2-9b-it:free)
-  Tier 2 Primary   →  Meta Muse Glimmer 30B          (meta/muse-glimmer-30b)
-  Tier 2 Fallback  →  Nemotron 3.5 Lightning 30B     (nvidia/nemotron-3.5-lightning-30b-a3b)
+  Tier 2 Primary   →  Nemotron 3.5 Lightning 30B     (nvidia/nemotron-3.5-lightning-30b-a3b)
+  Tier 2 Fallback  →  Meta Muse Glimmer 30B          (meta/muse-glimmer-30b)
   Tier 3 Primary   →  Nemotron 3 Super 120B          (nvidia/nemotron-3-super-120b-a12b)
   Tier 3 Fallback  →  DeepSeek V4.1 Flash (NVIDIA)   (deepseek-ai/deepseek-v4.1-flash)
   Tier 4 Primary   →  Nemotron 3 Ultra 550B          (nvidia/nemotron-3-ultra-550b-a55b)
@@ -28,8 +28,8 @@ from . import gemma_4_26b
 from . import gemma_4_26b_openrouter
 from . import gemini_3_5_flash_lite
 from . import gemma_2_9b_openrouter
-from . import muse_glimmer_30b
 from . import nemotron_3_5_lightning_30b
+from . import muse_glimmer_30b
 from . import nemotron_super_120b
 from . import glm_5_3_flash
 from . import nemotron_3_ultra_550b
@@ -45,8 +45,8 @@ MODEL_REGISTRY = [
     gemma_4_26b_openrouter,       # Tier 0 Fallback
     gemini_3_5_flash_lite,        # Tier 1 Primary
     gemma_2_9b_openrouter,        # Tier 1 Fallback
-    muse_glimmer_30b,             # Tier 2 Primary
-    nemotron_3_5_lightning_30b,   # Tier 2 Fallback
+    nemotron_3_5_lightning_30b,   # Tier 2 Primary
+    muse_glimmer_30b,             # Tier 2 Fallback
     nemotron_super_120b,          # Tier 3 Primary
     glm_5_3_flash,                # Tier 3 Fallback
     nemotron_3_ultra_550b,        # Tier 4 Primary
@@ -58,18 +58,18 @@ MODEL_REGISTRY = [
 TIER_MODEL_MAP = {
     "Tier 0": gemma_4_26b,
     "Tier 1": gemini_3_5_flash_lite,
-    "Tier 2": muse_glimmer_30b,
+    "Tier 2": nemotron_super_120b,
     "Tier 3": nemotron_super_120b,
     "Tier 4": nemotron_3_ultra_550b,
 }
 
 # ── Fallback chains per tier ────────────────────────────────────────────────
 TIER_FALLBACKS = {
-    "Tier 0": [gemma_4_26b_openrouter, gemini_3_5_flash_lite, muse_glimmer_30b],
-    "Tier 1": [gemma_2_9b_openrouter, gemma_4_26b, muse_glimmer_30b],
-    "Tier 2": [nemotron_3_5_lightning_30b, gemini_3_5_flash_lite, nemotron_super_120b],
-    "Tier 3": [deepseek_v4_1_flash, glm_5_3_flash, nemotron_3_ultra_550b, muse_glimmer_30b],
-    "Tier 4": [deepseek_v4_1_flash, kimi_k3, nemotron_super_120b, muse_glimmer_30b],
+    "Tier 0": [gemini_3_5_flash_lite, nemotron_super_120b, gemma_4_26b_openrouter],
+    "Tier 1": [gemma_4_26b, nemotron_super_120b, gemma_2_9b_openrouter],
+    "Tier 2": [gemini_3_5_flash_lite, muse_glimmer_30b, nemotron_3_ultra_550b],
+    "Tier 3": [nemotron_3_ultra_550b, kimi_k3, muse_glimmer_30b],
+    "Tier 4": [kimi_k3, nemotron_super_120b, muse_glimmer_30b],
 }
 
 
@@ -90,7 +90,7 @@ async def call_llm(
     Returns:
         (response_text, display_model_name)
     """
-    primary = TIER_MODEL_MAP.get(tier, muse_glimmer_30b)
+    primary = TIER_MODEL_MAP.get(tier, nemotron_3_5_lightning_30b)
 
     tier_fallbacks = TIER_FALLBACKS.get(tier, [])
     attempt_order = [primary] + tier_fallbacks + _build_fallback_chain(primary)
@@ -126,5 +126,5 @@ async def call_llm(
 
 def get_tier_model_info(tier: str) -> Tuple[str, str]:
     """Return (model_id, display_name) for the primary model of a tier."""
-    module = TIER_MODEL_MAP.get(tier, muse_glimmer_30b)
+    module = TIER_MODEL_MAP.get(tier, nemotron_3_5_lightning_30b)
     return module.MODEL_ID, module.DISPLAY_NAME

@@ -38,13 +38,9 @@ async def call(prompt: str, api_key: str | None = None) -> str:
         prompt=prompt,
         api_key=key,
         temperature=1.0,
-        top_p=0.95,
-        max_tokens=16384,
-        extra_body={
-            "reasoning_effort": "max",
-            "seed": 0,
-        },
-        timeout=20,
+        top_p=None,
+        max_tokens=4096,
+        timeout=25.0,
         system_prompt=(
             "You are a highly capable frontier assistant for complex reasoning and code. "
             "Provide comprehensive, structured, and accurate answers using markdown."

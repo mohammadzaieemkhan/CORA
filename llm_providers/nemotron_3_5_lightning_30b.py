@@ -1,7 +1,7 @@
 """
 llm_providers.nemotron_3_5_lightning_30b
 ────────────────────────────────────────
-Tier 2 Fallback — NVIDIA Nemotron 3.5 Lightning 30B-A3B
+Tier 2 Primary — NVIDIA Nemotron 3.5 Lightning 30B-A3B
 MoE reasoning model with extended thinking capabilities.
 
 Provider : NVIDIA Integrate API (OpenAI-compatible)
