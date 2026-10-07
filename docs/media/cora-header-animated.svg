@@ -1,0 +1,261 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050711" />
+      <stop offset="50%" stop-color="#0B0F24" />
+      <stop offset="100%" stop-color="#070914" />
+    </linearGradient>
+
+    <!-- Aurora Gradients -->
+    <linearGradient id="aurora1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="aurora2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="aurora3" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Text Gradients -->
+    <linearGradient id="coraGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="35%" stop-color="#818CF8" />
+      <stop offset="70%" stop-color="#C084FC" />
+      <stop offset="100%" stop-color="#F472B6" />
+    </linearGradient>
+
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+
+    <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.2" />
+      <stop offset="50%" stop-color="#818CF8" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#F472B6" stop-opacity="0.2" />
+    </linearGradient>
+
+    <!-- Glow Filters -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="auroraBlur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="45" />
+    </filter>
+
+    <!-- Pattern Grid -->
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#38BDF8" stroke-width="0.75" stroke-opacity="0.08" />
+    </pattern>
+  </defs>
+
+  <style>
+    .aurora-pulse-1 {
+      animation: floatAurora1 12s ease-in-out infinite alternate;
+    }
+    .aurora-pulse-2 {
+      animation: floatAurora2 14s ease-in-out infinite alternate;
+    }
+    .pulse-glow {
+      animation: pulseLogo 4s ease-in-out infinite alternate;
+    }
+    .orbit-ring-1 {
+      transform-origin: 105px 125px;
+      animation: spinOrbit 24s linear infinite;
+    }
+    .orbit-ring-2 {
+      transform-origin: 105px 125px;
+      animation: spinOrbitReverse 18s linear infinite;
+    }
+    .live-dot {
+      animation: radarPing 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .data-packet {
+      animation: streamFlow 4s linear infinite;
+    }
+    .packet-2 {
+      animation: streamFlow 4s linear 1.33s infinite;
+    }
+    .packet-3 {
+      animation: streamFlow 4s linear 2.66s infinite;
+    }
+    .shimmer-text {
+      background-size: 200% auto;
+      animation: textShimmer 6s linear infinite;
+    }
+
+    @keyframes floatAurora1 {
+      0% { transform: translate(-30px, -20px) scale(0.95); opacity: 0.6; }
+      100% { transform: translate(40px, 30px) scale(1.15); opacity: 0.95; }
+    }
+    @keyframes floatAurora2 {
+      0% { transform: translate(30px, 20px) scale(1.1); opacity: 0.5; }
+      100% { transform: translate(-35px, -15px) scale(0.9); opacity: 0.9; }
+    }
+    @keyframes pulseLogo {
+      0% { filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.45)); }
+      100% { filter: drop-shadow(0 0 28px rgba(56, 189, 248, 0.85)); }
+    }
+    @keyframes spinOrbit {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spinOrbitReverse {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+    @keyframes radarPing {
+      0% { r: 4px; opacity: 1; }
+      75%, 100% { r: 11px; opacity: 0; }
+    }
+    @keyframes streamFlow {
+      0% { stroke-dashoffset: 600; }
+      100% { stroke-dashoffset: 0; }
+    }
+  </style>
+
+  <!-- Container Box with Rounded Edges -->
+  <rect width="960" height="320" rx="18" fill="url(#bgGradient)" stroke="#1E293B" stroke-width="1.5" />
+
+  <!-- Aurora Blobs with Heavy Blur -->
+  <g filter="url(#auroraBlur)">
+    <circle cx="200" cy="90" r="140" fill="url(#aurora1)" class="aurora-pulse-1" />
+    <circle cx="750" cy="110" r="160" fill="url(#aurora2)" class="aurora-pulse-2" />
+    <circle cx="480" cy="220" r="130" fill="url(#aurora3)" class="aurora-pulse-1" />
+  </g>
+
+  <!-- Cybernetic Grid Overlay -->
+  <rect width="960" height="320" rx="18" fill="url(#grid)" />
+
+  <!-- Background Scan Accent Line -->
+  <line x1="20" y1="285" x2="940" y2="285" stroke="#38BDF8" stroke-width="1" stroke-opacity="0.15" />
+
+  <!-- ==================== LOGO EMBLEM ==================== -->
+  <g transform="translate(18, 5)" class="pulse-glow">
+    <!-- Outer ambient circle -->
+    <circle cx="105" cy="125" r="58" fill="#0E162E" stroke="#312E81" stroke-width="1.5" stroke-opacity="0.8" />
+
+    <!-- Orbital Ring 1 (Dashed Cyan) -->
+    <circle cx="105" cy="125" r="48" fill="none" stroke="#38BDF8" stroke-width="1.8" stroke-dasharray="8 6 3 6" class="orbit-ring-1" stroke-opacity="0.75" />
+
+    <!-- Orbital Ring 2 (Dashed Pink/Purple) -->
+    <circle cx="105" cy="125" r="38" fill="none" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="14 8 4 8" class="orbit-ring-2" stroke-opacity="0.6" />
+
+    <!-- Inner Core Planet -->
+    <circle cx="105" cy="125" r="24" fill="url(#bgGradient)" stroke="#818CF8" stroke-width="2" />
+    <circle cx="105" cy="125" r="14" fill="url(#coraGrad)" filter="url(#subtleGlow)" />
+
+    <!-- Satellite Nodes -->
+    <circle cx="105" cy="77" r="4.5" fill="#38BDF8" filter="url(#subtleGlow)" />
+    <circle cx="145" cy="148" r="4" fill="#F472B6" filter="url(#subtleGlow)" />
+    <circle cx="68" cy="142" r="3.5" fill="#818CF8" filter="url(#subtleGlow)" />
+  </g>
+
+  <!-- ==================== HEADER TYPOGRAPHY ==================== -->
+  <g transform="translate(205, 0)">
+    <!-- Version & Tag Badge -->
+    <g transform="translate(0, 52)">
+      <rect width="320" height="24" rx="12" fill="#1E1B4B" fill-opacity="0.75" stroke="#4F46E5" stroke-width="1" stroke-opacity="0.7" />
+      <!-- Pulsing Radar Dot -->
+      <circle cx="16" cy="12" r="4" fill="#10B981" />
+      <circle cx="16" cy="12" r="4" fill="#10B981" class="live-dot" />
+      <text x="28" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="700" fill="#A5B4FC" letter-spacing="1.2">
+        CORA V2.1 • HIGH-PRECISION LLM ROUTING
+      </text>
+    </g>
+
+    <!-- Main Title -->
+    <text x="0" y="128" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="900" fill="url(#coraGrad)" letter-spacing="3" filter="url(#subtleGlow)">
+      CORA
+    </text>
+
+    <!-- Subtitle -->
+    <text x="0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="600" fill="#E2E8F0" letter-spacing="2.8">
+      COGNITIVE ORCHESTRATION &amp; REASONING ALLOCATOR
+    </text>
+
+    <!-- Tagline description -->
+    <text x="0" y="188" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12.5" font-weight="400" fill="#94A3B8">
+      Intercepts user prompts, synthesizes 6D cognitive complexity, and dynamically directs traffic to optimal LLM tiers.
+    </text>
+
+    <!-- Feature Pills -->
+    <g transform="translate(0, 208)">
+      <!-- Pill 1: Cost Reduction -->
+      <g transform="translate(0, 0)">
+        <rect width="168" height="26" rx="13" fill="#0F172A" fill-opacity="0.85" stroke="#059669" stroke-width="1" stroke-opacity="0.6" />
+        <text x="14" y="17" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#34D399">
+          ⚡ 84.6% Cost Reduction
+        </text>
+      </g>
+
+      <!-- Pill 2: 6D Scorer -->
+      <g transform="translate(178, 0)">
+        <rect width="170" height="26" rx="13" fill="#0F172A" fill-opacity="0.85" stroke="#6366F1" stroke-width="1" stroke-opacity="0.6" />
+        <text x="14" y="17" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#A5B4FC">
+          🧠 6D Cognitive Profiler
+        </text>
+      </g>
+
+      <!-- Pill 3: Decision Latency -->
+      <g transform="translate(358, 0)">
+        <rect width="160" height="26" rx="13" fill="#0F172A" fill-opacity="0.85" stroke="#0284C7" stroke-width="1" stroke-opacity="0.6" />
+        <text x="14" y="17" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#38BDF8">
+          ⏱️ &lt;2ms Route Latency
+        </text>
+      </g>
+
+      <!-- Pill 4: Fallback Protection -->
+      <g transform="translate(528, 0)">
+        <rect width="180" height="26" rx="13" fill="#0F172A" fill-opacity="0.85" stroke="#D97706" stroke-width="1" stroke-opacity="0.6" />
+        <text x="14" y="17" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#FBBF24">
+          🛡️ Zero-Downtime Fallback
+        </text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== ANIMATED LOWER PIPELINE WIRE ==================== -->
+  <g transform="translate(45, 275)">
+    <!-- Base Conduit -->
+    <path d="M 0 0 L 160 0 L 220 0 L 460 0 L 680 0 L 870 0" fill="none" stroke="#1E293B" stroke-width="3" stroke-linecap="round" />
+
+    <!-- Glowing Streaming Circuit Path -->
+    <path d="M 0 0 L 160 0 L 220 0 L 460 0 L 680 0 L 870 0" fill="none" stroke="url(#wireGrad)" stroke-width="2.5" stroke-dasharray="35 250" class="data-packet" stroke-linecap="round" filter="url(#subtleGlow)" />
+    <path d="M 0 0 L 160 0 L 220 0 L 460 0 L 680 0 L 870 0" fill="none" stroke="url(#wireGrad)" stroke-width="2.5" stroke-dasharray="35 250" class="packet-2" stroke-linecap="round" filter="url(#subtleGlow)" />
+    <path d="M 0 0 L 160 0 L 220 0 L 460 0 L 680 0 L 870 0" fill="none" stroke="url(#wireGrad)" stroke-width="2.5" stroke-dasharray="35 250" class="packet-3" stroke-linecap="round" filter="url(#subtleGlow)" />
+
+    <!-- Checkpoint Stations -->
+    <!-- Prompt Ingestion -->
+    <circle cx="10" cy="0" r="4.5" fill="#38BDF8" stroke="#0B0F24" stroke-width="1.5" />
+    <text x="20" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" fill="#64748B" letter-spacing="0.5">INGESTION</text>
+
+    <!-- Cognitive Profiling -->
+    <circle cx="220" cy="0" r="4.5" fill="#818CF8" stroke="#0B0F24" stroke-width="1.5" />
+    <text x="180" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" fill="#818CF8" letter-spacing="0.5">6D PROFILING</text>
+
+    <!-- Ordinal Regression -->
+    <circle cx="460" cy="0" r="4.5" fill="#C084FC" stroke="#0B0F24" stroke-width="1.5" />
+    <text x="420" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" fill="#C084FC" letter-spacing="0.5">CALIBRATION FORMULA</text>
+
+    <!-- Dynamic Allocation -->
+    <circle cx="680" cy="0" r="4.5" fill="#F472B6" stroke="#0B0F24" stroke-width="1.5" />
+    <text x="645" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" fill="#F472B6" letter-spacing="0.5">TIER ROUTER</text>
+
+    <!-- SSE Token Stream -->
+    <circle cx="865" cy="0" r="4.5" fill="#34D399" stroke="#0B0F24" stroke-width="1.5" />
+    <text x="815" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" fill="#34D399" letter-spacing="0.5">SSE STREAMING</text>
+  </g>
+</svg>

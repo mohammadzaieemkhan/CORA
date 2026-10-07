@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 250" width="100%" height="100%">
+  <defs>
+    <linearGradient id="benchBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080C1B" />
+      <stop offset="100%" stop-color="#0B1226" />
+    </linearGradient>
+
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.9" />
+    </linearGradient>
+
+    <linearGradient id="cyanText" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#818CF8" />
+    </linearGradient>
+
+    <linearGradient id="emeraldText" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+
+    <linearGradient id="purpleText" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F472B6" />
+      <stop offset="100%" stop-color="#C084FC" />
+    </linearGradient>
+
+    <linearGradient id="amberText" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+
+    <filter id="cardGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <pattern id="benchGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#38BDF8" stroke-width="0.5" stroke-opacity="0.04" />
+    </pattern>
+  </defs>
+
+  <style>
+    .metric-card {
+      transition: transform 0.3s ease;
+    }
+    .metric-glow {
+      animation: pulseGlowMetric 4s ease-in-out infinite alternate;
+    }
+    @keyframes pulseGlowMetric {
+      0% { filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.2)); }
+      100% { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6)); }
+    }
+  </style>
+
+  <!-- Background -->
+  <rect width="920" height="250" rx="14" fill="url(#benchBg)" stroke="#1E293B" stroke-width="1.5" />
+  <rect width="920" height="250" rx="14" fill="url(#benchGrid)" />
+
+  <!-- Section Title -->
+  <g transform="translate(24, 20)">
+    <text x="0" y="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="800" fill="#38BDF8" letter-spacing="1.5">
+      EMPIRICAL BENCHMARK PERFORMANCE (CALIBRATED V2.1)
+    </text>
+    <text x="0" y="30" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">
+      Cost Reduction vs SOTA Quality Retention Across Industry Standard Datasets
+    </text>
+  </g>
+
+  <!-- Metric Card 1: GSM8K -->
+  <g transform="translate(24, 75)" class="metric-glow">
+    <rect width="205" height="150" rx="10" fill="url(#cardBg)" stroke="#38BDF8" stroke-width="1" stroke-opacity="0.4" />
+    <g transform="translate(14, 18)">
+      <text x="0" y="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="800" fill="#94A3B8">MATH &amp; REASONING</text>
+      <text x="0" y="30" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="800" fill="#E2E8F0">GSM8K Benchmark</text>
+      <text x="0" y="65" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="34" font-weight="900" fill="url(#cyanText)">96.0%</text>
+      <text x="0" y="85" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="600" fill="#38BDF8">Reasoning Accuracy</text>
+      
+      <rect width="177" height="22" rx="4" fill="#0284C7" fill-opacity="0.15" y="96" />
+      <text x="8" y="111" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" font-weight="700" fill="#38BDF8">
+        ⚡ 84.6% Cost Reduction
+      </text>
+    </g>
+  </g>
+
+  <!-- Metric Card 2: HumanEval -->
+  <g transform="translate(245, 75)" class="metric-glow">
+    <rect width="205" height="150" rx="10" fill="url(#cardBg)" stroke="#10B981" stroke-width="1" stroke-opacity="0.4" />
+    <g transform="translate(14, 18)">
+      <text x="0" y="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="800" fill="#94A3B8">CODE SYNTHESIS</text>
+      <text x="0" y="30" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="800" fill="#E2E8F0">HumanEval Code</text>
+      <text x="0" y="65" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="34" font-weight="900" fill="url(#emeraldText)">100%</text>
+      <text x="0" y="85" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="600" fill="#34D399">Pass@1 Success Rate</text>
+      
+      <rect width="177" height="22" rx="4" fill="#059669" fill-opacity="0.15" y="96" />
+      <text x="8" y="111" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" font-weight="700" fill="#34D399">
+        ⚡ 79.2% Cost Reduction
+      </text>
+    </g>
+  </g>
+
+  <!-- Metric Card 3: MMLU -->
+  <g transform="translate(466, 75)" class="metric-glow">
+    <rect width="205" height="150" rx="10" fill="url(#cardBg)" stroke="#A855F7" stroke-width="1" stroke-opacity="0.4" />
+    <g transform="translate(14, 18)">
+      <text x="0" y="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="800" fill="#94A3B8">MULTI-DOMAIN KNOWLEDGE</text>
+      <text x="0" y="30" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="800" fill="#E2E8F0">MMLU 5.7k Samples</text>
+      <text x="0" y="65" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="34" font-weight="900" fill="url(#purpleText)">81.9%</text>
+      <text x="0" y="85" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="600" fill="#C084FC">Domain Accuracy</text>
+      
+      <rect width="177" height="22" rx="4" fill="#7E22CE" fill-opacity="0.15" y="96" />
+      <text x="8" y="111" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" font-weight="700" fill="#E879F9">
+        ⚡ 83.2% Cost Reduction
+      </text>
+    </g>
+  </g>
+
+  <!-- Metric Card 4: RouterBench -->
+  <g transform="translate(687, 75)" class="metric-glow">
+    <rect width="205" height="150" rx="10" fill="url(#cardBg)" stroke="#F59E0B" stroke-width="1" stroke-opacity="0.4" />
+    <g transform="translate(14, 18)">
+      <text x="0" y="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="800" fill="#94A3B8">ROUTING EFFICIENCY</text>
+      <text x="0" y="30" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="800" fill="#E2E8F0">RouterBench Eval</text>
+      <text x="0" y="65" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="34" font-weight="900" fill="url(#amberText)">&lt;2ms</text>
+      <text x="0" y="85" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="600" fill="#FBBF24">Decision Routing Overhead</text>
+      
+      <rect width="177" height="22" rx="4" fill="#D97706" fill-opacity="0.15" y="96" />
+      <text x="8" y="111" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" font-weight="700" fill="#FCD34D">
+        ⚡ 85.0% Optimal AIQ Match
+      </text>
+    </g>
+  </g>
+</svg>
