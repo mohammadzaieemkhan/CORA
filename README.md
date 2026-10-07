@@ -14,7 +14,7 @@
   <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python_3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" /></a>
   <a href="#-security-architecture--protocols"><img src="https://img.shields.io/badge/Security-OWASP_LLM_Hardened-F59E0B?style=for-the-badge&logo=shield&logoColor=white" alt="Security Hardened" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-8B5CF6?style=for-the-badge" alt="License" /></a>
+  <a href="#-license"><img src="https://img.shields.io/badge/License-MIT-8B5CF6?style=for-the-badge" alt="License" /></a>
 </p>
 
 ---
@@ -624,11 +624,10 @@ We welcome community contributions to improve CORA's cognitive scorers, model in
 
 ## 📜 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for full details.
+This project is licensed under the MIT License.
 
 ---
 
 <p align="center">
-  <b>Built with precision for the next generation of intelligent LLM gateways.</b><br/>
-  <sub>Developed by <a href="https://github.com/mohammadzaieemkhan">Mohammad Zaieem Khan</a> and Contributors.</sub>
+  <b>Built with precision for the next generation of intelligent LLM gateways.</b>
 </p>
